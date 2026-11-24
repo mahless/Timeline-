@@ -72,7 +72,7 @@ export function isValidBackupPayload(raw: unknown): raw is TimelineBackupPayload
   if (!raw || typeof raw !== 'object') return false;
   const obj = raw as Partial<TimelineBackupPayload>;
   return (
-    obj.app === 'Timeline' &&
+    (obj.app === 'Timeline' || (obj as { app?: string }).app === 'ذاكرتي') &&
     Array.isArray(obj.events) &&
     Array.isArray(obj.categories) &&
     Array.isArray(obj.threads) &&
@@ -309,7 +309,7 @@ export function generatePrintableArchiveHtml(
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>Timeline — تقرير الأرشيف الشخصي</title>
+  <title>ذاكرتي — تقرير الأرشيف الشخصي</title>
   <style>
     body { font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif; color: #1C1917; margin: 28px; line-height: 1.6; }
     header { border-bottom: 2px solid #8C3B2B; padding-bottom: 12px; margin-bottom: 20px; }
@@ -324,7 +324,7 @@ export function generatePrintableArchiveHtml(
 </head>
 <body>
   <header>
-    <h1>Timeline — سجل الأرشيف الشخصي</h1>
+    <h1>ذاكرتي — سجل الأرشيف الشخصي</h1>
     <div class="sub">تاريخ التصدير: ${escapeHtml(exportedAtLabel)} · إجمالي الأحداث: ${sorted.length}</div>
   </header>
   ${rowsHtml || '<p>لا توجد أحداث مسجلة.</p>'}

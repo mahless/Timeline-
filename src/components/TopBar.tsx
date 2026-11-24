@@ -43,7 +43,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           onClick={() => onChangeView('dashboard')}
           className="text-xl sm:text-2xl font-bold tracking-tight text-[#FAF8F4] hover:text-white whitespace-nowrap shrink-0 cursor-pointer"
         >
-          Timeline
+          ذاكرتي
         </button>
 
         {/* Zone 2: Primary Text Navigation Links */}

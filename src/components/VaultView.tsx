@@ -251,7 +251,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
       }
 
       if (!isValidBackupPayload(parsed)) {
-        throw new Error('صيغة ملف النسخة الاحتياطية غير صالحة أو لا تخص Timeline.');
+        throw new Error('صيغة ملف النسخة الاحتياطية غير صالحة أو لا تخص ذاكرتي.');
       }
 
       await executeRestore(parsed);

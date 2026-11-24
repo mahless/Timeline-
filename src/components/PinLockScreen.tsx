@@ -40,7 +40,7 @@ export const PinLockScreen: React.FC<PinLockScreenProps> = ({ pinRecord, onUnloc
 
         <div className="space-y-1">
           <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-            Timeline مقفل
+            ذاكرتي مقفل
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400">
             أدخل رمز الحماية لفتح أرشيفك الشخصي.

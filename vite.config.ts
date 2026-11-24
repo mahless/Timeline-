@@ -15,8 +15,8 @@ export default defineConfig(() => {
         includeAssets: ['icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png'],
         manifest: {
           id: '/',
-          name: 'Timeline — الأرشيف الشخصي',
-          short_name: 'Timeline',
+          name: 'ذاكرتي — الأرشيف الشخصي',
+          short_name: 'ذاكرتي',
           description: 'أرشيف شخصي رقمي لتسجيل وحفظ واسترجاع الأحداث والذكريات الماضية والمستقبلية دون اتصال بالإنترنت.',
           theme_color: '#8C3B2B',
           background_color: '#FAF8F4',

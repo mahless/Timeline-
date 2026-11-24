@@ -44,7 +44,7 @@ export const PWAInstallButton: React.FC = () => {
           <div className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-stone-800 bg-[#FAF8F4] dark:bg-[#1E1D1B] p-6 shadow-xl">
             <div className="flex items-center justify-between gap-4">
               <h3 id="pwa-guide-title" className="text-lg font-bold text-stone-900 dark:text-stone-100">
-                تثبيت Timeline على جهازك
+                تثبيت ذاكرتي على جهازك
               </h3>
               <button
                 type="button"
