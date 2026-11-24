@@ -198,6 +198,8 @@ function escapeXml(value: string): string {
   // Guard against spreadsheet formula injection on leading = + - @
   const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
   return safe
+    .replace(/\r\n/g, ' ')
+    .replace(/[\r\n]/g, ' ')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

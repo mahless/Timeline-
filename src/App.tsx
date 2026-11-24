@@ -705,7 +705,7 @@ export default function App() {
                 {/* Header */}
                 <div className="min-w-0">
                   <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 [text-wrap:balance]">
-                    الأرشيف الزمني للحياة ({events.length} حدث)
+                    الأرشيف الزمني ({events.length} حدث)
                   </h1>
                   <p className="mt-1 text-xs sm:text-sm text-stone-500 dark:text-stone-400 tabular-nums">
                     اليوم: {todayLabels.gregorian} · {todayLabels.hijri}
