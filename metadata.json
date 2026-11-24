@@ -1,0 +1,6 @@
+{
+  "name": "Timeline",
+  "description": "أرشيف شخصي رقمي لتسجيل وحفظ واسترجاع الأحداث والذكريات الماضية والمستقبلية مع العمل دون اتصال بالإنترنت.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
