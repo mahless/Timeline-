@@ -64,47 +64,43 @@ export const YearJumpIndex: React.FC<YearJumpIndexProps> = ({
 
         {/* Year Navigation */}
         {years.length > 0 && (
-          <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-medium text-stone-500 dark:text-stone-400">
-                التنقل حسب السنة
-              </h2>
-              {selectedYear !== 'all' && (
-                <button
-                  type="button"
-                  onClick={() => onSelectYear('all')}
-                  className="text-xs font-medium text-[#8C3B2B] dark:text-[#E28A6D] hover:underline cursor-pointer"
+          <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-3">
+            <h2 className="text-xs font-medium text-stone-500 dark:text-stone-400">
+              التنقل حسب السنة
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onSelectYear('all')}
+                className={`min-h-[38px] rounded-xl px-3.5 text-xs font-medium cursor-pointer ${
+                  selectedYear === 'all'
+                    ? 'bg-[#8C3B2B] text-white'
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
+                }`}
+              >
+                الكل
+              </button>
+              <div className="flex-1 min-w-0">
+                <select
+                  aria-label="اختر السنة"
+                  value={selectedYear}
+                  onChange={(e) => {
+                    const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                    onSelectYear(val);
+                    if (val !== 'all') {
+                      onJumpToYearAnchor(val);
+                    }
+                  }}
+                  className="w-full min-h-[38px] rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-3 text-xs font-medium text-stone-800 dark:text-stone-100 cursor-pointer"
                 >
-                  عرض الكل
-                </button>
-              )}
-            </div>
-
-            <div className="mt-3 max-h-64 overflow-y-auto space-y-1 pl-1">
-              {years.map((item) => {
-                const isSelected = selectedYear === item.year;
-                return (
-                  <div key={item.year} className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onSelectYear(isSelected ? 'all' : item.year);
-                        onJumpToYearAnchor(item.year);
-                      }}
-                      className={`flex-1 min-h-[38px] flex items-center justify-between rounded-xl px-3 text-sm transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#8C3B2B]/10 dark:bg-[#E28A6D]/15 font-bold text-[#8C3B2B] dark:text-[#E28A6D]'
-                          : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/70'
-                      }`}
-                    >
-                      <span className="tabular-nums">{item.year}</span>
-                      <span className="text-xs tabular-nums text-stone-500 dark:text-stone-400">
-                        {item.count}
-                      </span>
-                    </button>
-                  </div>
-                );
-              })}
+                  <option value="all">اختر السنة...</option>
+                  {years.map((y) => (
+                    <option key={y.year} value={y.year}>
+                      {y.year} ({y.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         )}

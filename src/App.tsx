@@ -705,7 +705,7 @@ export default function App() {
                 {/* Header */}
                 <div className="min-w-0">
                   <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 [text-wrap:balance]">
-                    الأرشيف الزمني للحياة
+                    الأرشيف الزمني للحياة ({events.length} حدث)
                   </h1>
                   <p className="mt-1 text-xs sm:text-sm text-stone-500 dark:text-stone-400 tabular-nums">
                     اليوم: {todayLabels.gregorian} · {todayLabels.hijri}
@@ -806,36 +806,36 @@ export default function App() {
 
                   {/* Mobile Quick Year Jump Strip (Wraps cleanly — Zero horizontal scroll) */}
                   {quickYears.length > 0 && (
-                    <div className="lg:hidden flex flex-wrap items-center gap-1.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
-                      <span className="text-[11px] text-stone-500 ml-1">السنوات:</span>
+                    <div className="lg:hidden flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-stone-800/80">
                       <button
                         type="button"
                         onClick={() => setFilters((prev) => ({ ...prev, year: 'all' }))}
-                        className={`min-h-[32px] rounded-lg px-2.5 text-xs tabular-nums cursor-pointer ${
+                        className={`min-h-[36px] rounded-xl px-3 text-xs font-medium cursor-pointer ${
                           filters.year === 'all'
-                            ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-medium'
-                            : 'text-stone-600 dark:text-stone-400'
+                            ? 'bg-[#8C3B2B] text-white'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
                         }`}
                       >
                         الكل
                       </button>
-                      {quickYears.map((qy) => (
-                        <button
-                          key={qy.year}
-                          type="button"
-                          onClick={() => {
-                            const nextYear = filters.year === qy.year ? 'all' : qy.year;
-                            setFilters((prev) => ({ ...prev, year: nextYear }));
+                      <div className="flex-1 min-w-0">
+                        <select
+                          aria-label="اختر السنة"
+                          value={filters.year}
+                          onChange={(e) => {
+                            const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                            setFilters((prev) => ({ ...prev, year: val }));
                           }}
-                          className={`min-h-[32px] rounded-lg px-2.5 text-xs tabular-nums cursor-pointer ${
-                            filters.year === qy.year
-                              ? 'bg-[#8C3B2B] text-white font-medium'
-                              : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
-                          }`}
+                          className="w-full min-h-[36px] rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-3 text-xs font-medium text-stone-800 dark:text-stone-100 cursor-pointer"
                         >
-                          {qy.year}
-                        </button>
-                      ))}
+                          <option value="all">اختر السنة...</option>
+                          {quickYears.map((qy) => (
+                            <option key={qy.year} value={qy.year}>
+                              {qy.year} ({qy.count})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   )}
                 </div>

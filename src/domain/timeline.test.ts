@@ -89,9 +89,9 @@ test('classifyTemporalPosition handles exact, month, and year precisions', () =>
   );
 });
 
-test('groupTimelineByHorizon splits future above, today at center, past below in descending order', () => {
+test('groupTimelineByHorizon splits future (10 days or fewer) above, today at center, past below in descending order', () => {
   const eFutureFar = makeEvent('f2', { title: 'مستقبل بعيد', year: 2028, month: 1, day: 10 });
-  const eFutureNear = makeEvent('f1', { title: 'مستقبل قريب', year: 2026, month: 12, day: 5 });
+  const eFutureNear = makeEvent('f1', { title: 'مستقبل قريب ضمن 10 أيام', year: 2026, month: 11, day: 28 });
   const eToday = makeEvent('t1', { title: 'اليوم', year: 2026, month: 11, day: 23 });
   const ePastRecent = makeEvent('p1', { title: 'أمس', year: 2026, month: 11, day: 22 });
   const ePastOld = makeEvent('p2', { title: 'ماض قديم', datePrecision: 'year', year: 2020 });
@@ -103,7 +103,7 @@ test('groupTimelineByHorizon splits future above, today at center, past below in
 
   assert.deepEqual(
     grouped.futureYears.map((y) => y.year),
-    [2028, 2026],
+    [2026],
   );
   assert.deepEqual(
     grouped.todayEvents.map((e) => e.id),

@@ -178,18 +178,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       ) : (
         <>
-          {/* Summary KPI Grid (2x2 mobile, 4-col desktop, zero horizontal scroll) */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5">
-              <p className="text-xs text-stone-500 dark:text-stone-400">إجمالي الأرشيف</p>
-              <p className="mt-1.5 text-2xl sm:text-3xl font-bold tabular-nums text-stone-900 dark:text-stone-100">
-                {summary.totalCount}
-              </p>
-              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
-                {summary.pastCount} ماضٍ · {summary.futureCount} قادم
-              </p>
-            </div>
-
+          {/* Summary KPI Grid (2-col, zero horizontal scroll) */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5">
               <p className="text-xs text-stone-500 dark:text-stone-400">أحداث اليوم</p>
               <p className="mt-1.5 text-2xl sm:text-3xl font-bold tabular-nums text-[#8C3B2B] dark:text-[#E28A6D]">
@@ -207,16 +197,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </p>
               <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                 الأيام السبعة القادمة
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5">
-              <p className="text-xs text-stone-500 dark:text-stone-400">خلال 30 يومًا</p>
-              <p className="mt-1.5 text-2xl sm:text-3xl font-bold tabular-nums text-stone-900 dark:text-stone-100">
-                {summary.thisMonthCount}
-              </p>
-              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-                مواعيد الشهر القادم
               </p>
             </div>
           </div>
@@ -280,7 +260,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Today's Agenda */}
               {summary.todayOccurrences.length > 0 && (
-                <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-3">
+                <div className="rounded-2xl border border-[#8C3B2B]/25 dark:border-[#E28A6D]/25 bg-[#FAF4ED] dark:bg-[#221D1B] p-5 space-y-3 shadow-xs">
                   <div className="flex items-center justify-between gap-2">
                     <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
                       مواعيد وأحداث اليوم

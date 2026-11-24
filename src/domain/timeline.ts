@@ -430,12 +430,25 @@ export function groupTimelineByHorizon(
   const future: TimelineEvent[] = [];
   const todayEvents: TimelineEvent[] = [];
   const past: TimelineEvent[] = [];
+  const todayUtc = Date.UTC(today.year, today.month - 1, today.day);
 
   for (const event of events) {
     const pos = classifyTemporalPosition(event, today);
-    if (pos === 'future') future.push(event);
-    else if (pos === 'today') todayEvents.push(event);
-    else past.push(event);
+    if (pos === 'future') {
+      const eventUtc = Date.UTC(
+        event.gregorianYear,
+        (event.gregorianMonth ?? 1) - 1,
+        event.gregorianDay ?? 1,
+      );
+      const diffDays = Math.round((eventUtc - todayUtc) / 86_400_000);
+      if (diffDays >= 0 && diffDays <= 10) {
+        future.push(event);
+      }
+    } else if (pos === 'today') {
+      todayEvents.push(event);
+    } else {
+      past.push(event);
+    }
   }
 
   todayEvents.sort(compareEventsDesc);
