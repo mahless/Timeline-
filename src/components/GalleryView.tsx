@@ -7,6 +7,8 @@ import { getAllAttachments } from '../storage/db';
 interface GalleryViewProps {
   events: TimelineEvent[];
   categories: Category[];
+  lightboxItem: GalleryItem | null;
+  setLightboxItem: (item: GalleryItem | null) => void;
   onSelectEvent: (event: TimelineEvent) => void;
 }
 
@@ -25,13 +27,14 @@ function formatBytes(bytes: number): string {
 export const GalleryView: React.FC<GalleryViewProps> = ({
   events,
   categories,
+  lightboxItem,
+  setLightboxItem,
   onSelectEvent,
 }) => {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [mediaFilter, setMediaFilter] = useState<'all' | 'images' | 'files'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [lightboxItem, setLightboxItem] = useState<GalleryItem | null>(null);
 
   const eventsMap = useMemo(
     () => new Map<string, TimelineEvent>(events.map((e) => [e.id, e])),

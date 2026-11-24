@@ -105,8 +105,55 @@ export default function App() {
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | null>(null);
   const [defaultThreadId, setDefaultThreadId] = useState<string | undefined>(undefined);
   const [seedingSamples, setSeedingSamples] = useState(false);
+  const [lightboxItem, setLightboxItem] = useState<any | null>(null);
 
   const notifiedSessionKeysRef = useRef<Set<string>>(new Set());
+
+  const handleNavigateView = useCallback(
+    (view: ActiveView) => {
+      if (view === activeView) return;
+      if (lightboxItem) setLightboxItem(null);
+      if (formOpen) setFormOpen(false);
+      if (selectedEvent) setSelectedEvent(null);
+
+      if (view !== 'dashboard' && activeView === 'dashboard') {
+        window.history.pushState({ view }, '');
+      } else if (view === 'dashboard' && activeView !== 'dashboard') {
+        window.history.back();
+        return;
+      } else {
+        window.history.pushState({ view }, '');
+      }
+      setActiveView(view);
+    },
+    [activeView, lightboxItem, formOpen, selectedEvent],
+  );
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (formOpen) {
+        setFormOpen(false);
+        setEditingEvent(null);
+        setDefaultThreadId(undefined);
+        return;
+      }
+      if (selectedEvent) {
+        setSelectedEvent(null);
+        return;
+      }
+      if (lightboxItem) {
+        setLightboxItem(null);
+        return;
+      }
+      if (activeView !== 'dashboard') {
+        setActiveView('dashboard');
+        return;
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [formOpen, selectedEvent, lightboxItem, activeView]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -294,19 +341,31 @@ export default function App() {
     filters.year !== 'all' ||
     filters.searchQuery.trim().length > 0;
 
+  const handleSelectEvent = (event: TimelineEvent | null) => {
+    if (event) {
+      window.history.pushState({ modal: 'detail' }, '');
+      setSelectedEvent(event);
+    } else {
+      setSelectedEvent(null);
+    }
+  };
+
   const handleOpenNewEvent = () => {
+    window.history.pushState({ modal: 'form' }, '');
     setEditingEvent(null);
     setDefaultThreadId(undefined);
     setFormOpen(true);
   };
 
   const handleOpenNewEventInThread = (threadId: string) => {
+    window.history.pushState({ modal: 'form' }, '');
     setEditingEvent(null);
     setDefaultThreadId(threadId);
     setFormOpen(true);
   };
 
   const handleOpenEditEvent = (event: TimelineEvent) => {
+    window.history.pushState({ modal: 'form' }, '');
     setSelectedEvent(null);
     setDefaultThreadId(undefined);
     setEditingEvent(event);
@@ -347,6 +406,7 @@ export default function App() {
     setEditingEvent(null);
     setDefaultThreadId(undefined);
     refreshAutoBackup();
+    window.history.back();
     if (activeView === 'categories' || activeView === 'stats') {
       setActiveView('timeline');
     }
@@ -357,6 +417,7 @@ export default function App() {
     setEvents((prev) => prev.filter((item) => item.id !== eventId));
     setSelectedEvent(null);
     refreshAutoBackup();
+    window.history.back();
   };
 
   const handleTogglePin = async (event: TimelineEvent) => {
@@ -499,7 +560,7 @@ export default function App() {
                     category={categoriesMap.get(ev.categoryId)}
                     thread={ev.threadId ? threadsMap.get(ev.threadId) : undefined}
                     today={today}
-                    onSelect={setSelectedEvent}
+                    onSelect={handleSelectEvent}
                   />
                 ))}
               </div>
@@ -522,7 +583,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-[#FAF8F4] dark:bg-[#141413] text-stone-900 dark:text-stone-100 overflow-x-clip">
       <TopBar
         activeView={activeView}
-        onChangeView={setActiveView}
+        onChangeView={handleNavigateView}
         onOpenNewEvent={handleOpenNewEvent}
       />
 
@@ -555,9 +616,9 @@ export default function App() {
             categoriesMap={categoriesMap}
             seedingSamples={seedingSamples}
             backupSyncStatus={backupSyncStatus}
-            onSelectEvent={setSelectedEvent}
+            onSelectEvent={handleSelectEvent}
             onDismissReminder={handleDismissReminder}
-            onNavigate={setActiveView}
+            onNavigate={handleNavigateView}
             onOpenNewEvent={handleOpenNewEvent}
             onLoadSamples={handleLoadSamples}
           />
@@ -566,7 +627,7 @@ export default function App() {
             occurrences={upcomingOccurrences}
             dueReminders={dueReminders}
             categoriesMap={categoriesMap}
-            onSelectEvent={setSelectedEvent}
+            onSelectEvent={handleSelectEvent}
             onTogglePin={handleTogglePin}
             onDismissReminder={handleDismissReminder}
           />
@@ -577,7 +638,7 @@ export default function App() {
             categoriesMap={categoriesMap}
             onCreateThread={handleCreateThread}
             onDeleteThread={handleDeleteThread}
-            onSelectEvent={setSelectedEvent}
+            onSelectEvent={handleSelectEvent}
             onAddEventInThread={handleOpenNewEventInThread}
           />
         ) : activeView === 'stats' ? (
@@ -589,7 +650,14 @@ export default function App() {
           <GalleryView
             events={events}
             categories={categories}
-            onSelectEvent={setSelectedEvent}
+            lightboxItem={lightboxItem}
+            setLightboxItem={(item) => {
+              if (item) {
+                window.history.pushState({ modal: 'lightbox' }, '');
+              }
+              setLightboxItem(item);
+            }}
+            onSelectEvent={handleSelectEvent}
           />
         ) : activeView === 'assistant' ? (
           <AssistantView
@@ -597,7 +665,7 @@ export default function App() {
             categoriesMap={categoriesMap}
             threadsMap={threadsMap}
             today={today}
-            onSelectEvent={setSelectedEvent}
+            onSelectEvent={handleSelectEvent}
           />
         ) : activeView === 'vault' ? (
           <VaultView
@@ -614,7 +682,7 @@ export default function App() {
             onBackupSyncStatusChange={setBackupSyncStatus}
             onToggleTheme={handleToggleTheme}
             onChangeFontScale={handleChangeFontScale}
-            onOpenCategories={() => setActiveView('categories')}
+            onOpenCategories={() => handleNavigateView('categories')}
             onSetPin={handleSetPin}
             onLockNow={handleLockNow}
             onRestoreComplete={handleRestoreComplete}
@@ -903,7 +971,7 @@ export default function App() {
         activeView={activeView}
         theme={theme}
         onToggleTheme={handleToggleTheme}
-        onChangeView={setActiveView}
+        onChangeView={handleNavigateView}
       />
 
       <OfflineIndicator />
@@ -914,7 +982,9 @@ export default function App() {
           category={categoriesMap.get(selectedEvent.categoryId)}
           thread={selectedEvent.threadId ? threadsMap.get(selectedEvent.threadId) : undefined}
           today={today}
-          onClose={() => setSelectedEvent(null)}
+          onClose={() => {
+            if (selectedEvent) window.history.back();
+          }}
           onEdit={handleOpenEditEvent}
           onDelete={handleDeleteEvent}
           onTogglePin={handleTogglePin}
@@ -928,9 +998,7 @@ export default function App() {
           threads={threads}
           initialThreadId={defaultThreadId}
           onClose={() => {
-            setFormOpen(false);
-            setEditingEvent(null);
-            setDefaultThreadId(undefined);
+            if (formOpen) window.history.back();
           }}
           onSave={handleSaveEvent}
         />
