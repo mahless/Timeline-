@@ -14,6 +14,7 @@ import {
   getNotificationPermission,
   requestNotificationPermission,
 } from '../pwa/notifications';
+import { FutureEventBadge } from './FutureEventBadge';
 
 interface UpcomingViewProps {
   today: DateParts;
@@ -152,6 +153,13 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
                   {occ.event.reminders.map((r) => REMINDER_OFFSET_LABELS[r.offset]).join(' · ')}
                 </span>
               </span>
+            )}
+            {isFuture && (
+              <FutureEventBadge
+                event={occ.event}
+                today={today}
+                isRecurringInstance={occ.isRecurringInstance}
+              />
             )}
           </div>
         </div>

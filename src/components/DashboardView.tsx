@@ -21,6 +21,7 @@ import {
 } from '../domain/timeline';
 import type { Category, DateParts, TimelineEvent } from '../domain/types';
 import type { BackupSyncStatus } from '../pwa/autoFileBackup';
+import { FutureEventBadge } from './FutureEventBadge';
 import { PWAInstallButton } from './PWAInstallButton';
 import type { ActiveView } from './TopBar';
 
@@ -373,6 +374,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               {occ.event.description}
                             </p>
                           )}
+                          <div className="mt-2 flex items-center justify-end">
+                            <FutureEventBadge
+                              event={occ.event}
+                              today={today}
+                              isRecurringInstance={occ.isRecurringInstance}
+                            />
+                          </div>
                         </button>
                       );
                     })}

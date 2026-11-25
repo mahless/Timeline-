@@ -45,7 +45,6 @@ import type {
   CategoryColorKey,
   EventFormInput,
   EventThread,
-  TemporalPosition,
   TimelineEvent,
   TimelineFilters,
   YearGroup,
@@ -336,7 +335,6 @@ export default function App() {
   }, [loading, dueReminders]);
 
   const hasActiveFilters =
-    filters.temporal !== 'all' ||
     filters.categoryId !== 'all' ||
     filters.year !== 'all' ||
     filters.searchQuery.trim().length > 0;
@@ -707,9 +705,14 @@ export default function App() {
               <div className="w-full flex-1 min-w-0 space-y-6">
                 {/* Header */}
                 <div className="min-w-0">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 [text-wrap:balance]">
-                    الأرشيف الزمني ({events.length} حدث)
-                  </h1>
+                  <div className="flex items-center justify-between gap-3">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 [text-wrap:balance]">
+                      الأرشيف الزمني
+                    </h1>
+                    <span className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs tabular-nums shrink-0">
+                      {events.length} حدث
+                    </span>
+                  </div>
                   <p className="mt-1 text-xs sm:text-sm text-stone-500 dark:text-stone-400 tabular-nums">
                     اليوم: {todayLabels.gregorian} · {todayLabels.hijri}
                   </p>
@@ -743,30 +746,46 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Filter Dropdowns (Side-by-side on a single row, Zero Horizontal Scroll) */}
+                {/* Filter Row: All + Year + Category (Side-by-side, Zero Horizontal Scroll) */}
                 <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-3.5 sm:p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div className="min-w-0">
-                      <label htmlFor="timeline-temporal-select" className="sr-only">
-                        تصفية حسب الزمن
-                      </label>
-                      <select
-                        id="timeline-temporal-select"
-                        aria-label="تصفية حسب الزمن"
-                        value={filters.temporal}
-                        onChange={(e) =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            temporal: e.target.value as 'all' | TemporalPosition,
-                          }))
-                        }
-                        className="w-full min-w-0 min-h-[42px] rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-3 text-xs sm:text-sm font-medium text-stone-800 dark:text-stone-100 focus:border-[#8C3B2B] focus:outline-none cursor-pointer"
+                  <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => setFilters((prev) => ({ ...prev, year: 'all' }))}
+                        className={`min-h-[42px] rounded-xl px-2.5 sm:px-3.5 text-xs sm:text-sm font-medium shrink-0 cursor-pointer transition-colors ${
+                          filters.year === 'all'
+                            ? 'bg-[#8C3B2B] text-white'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200/70 dark:hover:bg-stone-700'
+                        }`}
                       >
-                        <option value="all">الزمن: الكل</option>
-                        <option value="future">القادمة</option>
-                        <option value="today">اليوم</option>
-                        <option value="past">الماضية</option>
-                      </select>
+                        الكل
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <label htmlFor="timeline-year-select" className="sr-only">
+                          اختر السنة
+                        </label>
+                        <select
+                          id="timeline-year-select"
+                          aria-label="اختر السنة"
+                          value={filters.year}
+                          onChange={(e) => {
+                            const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                            setFilters((prev) => ({ ...prev, year: val }));
+                            if (val !== 'all') {
+                              scrollToElementId(`year-${val}`);
+                            }
+                          }}
+                          className="w-full min-w-0 min-h-[42px] rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-2 sm:px-3 text-xs sm:text-sm font-medium text-stone-800 dark:text-stone-100 focus:border-[#8C3B2B] focus:outline-none cursor-pointer"
+                        >
+                          <option value="all">السنة...</option>
+                          {quickYears.map((qy) => (
+                            <option key={qy.year} value={qy.year}>
+                              {qy.year} ({qy.count})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div className="min-w-0">
@@ -783,7 +802,7 @@ export default function App() {
                             categoryId: e.target.value,
                           }))
                         }
-                        className="w-full min-w-0 min-h-[42px] rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-3 text-xs sm:text-sm font-medium text-stone-800 dark:text-stone-100 focus:border-[#8C3B2B] focus:outline-none cursor-pointer"
+                        className="w-full min-w-0 min-h-[42px] rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-stone-800 dark:text-stone-100 focus:border-[#8C3B2B] focus:outline-none cursor-pointer"
                       >
                         <option value="all">كل التصنيفات</option>
                         {categories.map((cat) => (
@@ -804,41 +823,6 @@ export default function App() {
                       >
                         إعادة ضبط التصفية ({filteredEvents.length})
                       </button>
-                    </div>
-                  )}
-
-                  {/* Mobile Quick Year Jump Strip (Wraps cleanly — Zero horizontal scroll) */}
-                  {quickYears.length > 0 && (
-                    <div className="lg:hidden flex items-center gap-2 pt-2 border-t border-stone-100 dark:border-stone-800/80">
-                      <button
-                        type="button"
-                        onClick={() => setFilters((prev) => ({ ...prev, year: 'all' }))}
-                        className={`min-h-[36px] rounded-xl px-3 text-xs font-medium cursor-pointer ${
-                          filters.year === 'all'
-                            ? 'bg-[#8C3B2B] text-white'
-                            : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
-                        }`}
-                      >
-                        الكل
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <select
-                          aria-label="اختر السنة"
-                          value={filters.year}
-                          onChange={(e) => {
-                            const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
-                            setFilters((prev) => ({ ...prev, year: val }));
-                          }}
-                          className="w-full min-h-[36px] rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-3 text-xs font-medium text-stone-800 dark:text-stone-100 cursor-pointer"
-                        >
-                          <option value="all">اختر السنة...</option>
-                          {quickYears.map((qy) => (
-                            <option key={qy.year} value={qy.year}>
-                              {qy.year} ({qy.count})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -955,15 +939,11 @@ export default function App() {
                 )}
               </div>
 
-              {/* Desktop Sidebar: Quick Jump Index + Archive Stats + PWA */}
+              {/* Desktop Sidebar: Archive Stats + PWA */}
               <YearJumpIndex
-                years={quickYears}
-                selectedYear={filters.year}
                 totalCount={archiveCounts.total}
                 futureCount={archiveCounts.future}
                 pastCount={archiveCounts.past}
-                onSelectYear={(year) => setFilters((prev) => ({ ...prev, year }))}
-                onJumpToYearAnchor={(year) => scrollToElementId(`year-${year}`)}
                 onJumpToToday={() => {
                   setFilters((prev) => ({ ...prev, year: 'all', temporal: 'all' }));
                   scrollToElementId('today-horizon');

@@ -9,6 +9,7 @@ import {
 } from '../domain/timeline';
 import type { Category, DateParts, EventThread, TimelineEvent } from '../domain/types';
 import { useOnlineStatus } from '../pwa/useOnlineStatus';
+import { FutureEventBadge } from './FutureEventBadge';
 
 interface AssistantViewProps {
   events: TimelineEvent[];
@@ -280,6 +281,11 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
                               {ev.description}
                             </p>
                           )}
+                          {isFuture && (
+                            <div className="mt-2 flex items-center justify-end">
+                              <FutureEventBadge event={ev} today={today} />
+                            </div>
+                          )}
                         </button>
                       );
                     })}
@@ -372,9 +378,12 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
                           {event.description}
                         </p>
                       )}
-                      <p className="mt-2 text-xs text-[#8C3B2B] dark:text-[#E28A6D]">
-                        تطابق مفاهيمي: {matchedConcepts.join(' · ')}
-                      </p>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <p className="text-xs text-[#8C3B2B] dark:text-[#E28A6D]">
+                          تطابق مفاهيمي: {matchedConcepts.join(' · ')}
+                        </p>
+                        {isFuture && <FutureEventBadge event={event} today={today} />}
+                      </div>
                     </button>
                   );
                 })}

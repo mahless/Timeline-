@@ -13,6 +13,7 @@ import type {
   EventThread,
   TimelineEvent,
 } from '../domain/types';
+import { FutureEventBadge } from './FutureEventBadge';
 
 interface ThreadsViewProps {
   threads: EventThread[];
@@ -167,6 +168,11 @@ export const ThreadsView: React.FC<ThreadsViewProps> = ({
                       <p className="mt-1 text-sm text-stone-600 dark:text-stone-400 line-clamp-2">
                         {ev.description}
                       </p>
+                    )}
+                    {isFuture && (
+                      <div className="mt-2 flex items-center justify-end">
+                        <FutureEventBadge event={ev} today={today} />
+                      </div>
                     )}
                   </button>
                 </article>

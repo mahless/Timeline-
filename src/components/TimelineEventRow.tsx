@@ -8,6 +8,7 @@ import {
   getRelativeTimeLabel,
 } from '../domain/timeline';
 import type { Category, DateParts, EventThread, TimelineEvent } from '../domain/types';
+import { FutureEventBadge } from './FutureEventBadge';
 
 interface TimelineEventRowProps {
   event: TimelineEvent;
@@ -98,61 +99,64 @@ export const TimelineEventRow: React.FC<TimelineEventRowProps> = ({
           </p>
         )}
 
-        {/* Secondary Metadata: Location, Thread, Recurrence, Reminders, Keywords, Attachments */}
-        {hasSecondary && (
+        {/* Secondary Metadata + Future Card Corner Badge */}
+        {(hasSecondary || isFuture) && (
           <div
-            className={`mt-3 pt-3 border-t flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500 dark:text-stone-400 ${
+            className={`mt-3 pt-3 border-t flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500 dark:text-stone-400 ${
               isFuture
                 ? 'border-sky-500/20 dark:border-sky-400/20'
                 : 'border-stone-100 dark:border-stone-800/80'
             }`}
           >
-            {thread && (
-              <span className="inline-flex items-center gap-1 text-stone-700 dark:text-stone-300">
-                <GitBranch className="w-3.5 h-3.5 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
-                <span className="break-words">{thread.title}</span>
-              </span>
-            )}
-            {event.recurrence && (
-              <span className="inline-flex items-center gap-1">
-                <Repeat className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span>
-                  يتكرر {RECURRENCE_LABELS[event.recurrence.frequency]} (
-                  {event.recurrence.calendar === 'hijri' ? 'هجري' : 'ميلادي'})
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
+              {thread && (
+                <span className="inline-flex items-center gap-1 text-stone-700 dark:text-stone-300">
+                  <GitBranch className="w-3.5 h-3.5 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
+                  <span className="break-words">{thread.title}</span>
                 </span>
-              </span>
-            )}
-            {event.reminders && event.reminders.length > 0 && (
-              <span className="inline-flex items-center gap-1 tabular-nums">
-                <Bell className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span>
-                  {event.reminders.length === 1 ? 'تذكير نشط' : `${event.reminders.length} تذكيرات`}
+              )}
+              {event.recurrence && (
+                <span className="inline-flex items-center gap-1">
+                  <Repeat className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    يتكرر {RECURRENCE_LABELS[event.recurrence.frequency]} (
+                    {event.recurrence.calendar === 'hijri' ? 'هجري' : 'ميلادي'})
+                  </span>
                 </span>
-              </span>
-            )}
-            {event.location && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span className="break-words">{event.location}</span>
-              </span>
-            )}
-            {event.attachmentIds.length > 0 && (
-              <span className="inline-flex items-center gap-1 tabular-nums">
-                <Paperclip className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span>
-                  {event.attachmentIds.length === 1
-                    ? 'مرفق واحد'
-                    : event.attachmentIds.length === 2
-                      ? 'مرفقان'
-                      : `${event.attachmentIds.length} مرفقات`}
+              )}
+              {event.reminders && event.reminders.length > 0 && (
+                <span className="inline-flex items-center gap-1 tabular-nums">
+                  <Bell className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    {event.reminders.length === 1 ? 'تذكير نشط' : `${event.reminders.length} تذكيرات`}
+                  </span>
                 </span>
-              </span>
-            )}
-            {event.keywords.length > 0 && (
-              <span className="break-words max-w-full">
-                {event.keywords.join(' · ')}
-              </span>
-            )}
+              )}
+              {event.location && (
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  <span className="break-words">{event.location}</span>
+                </span>
+              )}
+              {event.attachmentIds.length > 0 && (
+                <span className="inline-flex items-center gap-1 tabular-nums">
+                  <Paperclip className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    {event.attachmentIds.length === 1
+                      ? 'مرفق واحد'
+                      : event.attachmentIds.length === 2
+                        ? 'مرفقان'
+                        : `${event.attachmentIds.length} مرفقات`}
+                  </span>
+                </span>
+              )}
+              {event.keywords.length > 0 && (
+                <span className="break-words max-w-full">
+                  {event.keywords.join(' · ')}
+                </span>
+              )}
+            </div>
+            {isFuture && <FutureEventBadge event={event} today={today} />}
           </div>
         )}
       </button>
