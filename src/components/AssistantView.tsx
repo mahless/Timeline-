@@ -281,7 +281,7 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
                               {ev.description}
                             </p>
                           )}
-                          {isFuture && (
+                          {isFuture && !ev.recurrence && (
                             <div className="mt-2 flex items-center justify-end">
                               <FutureEventBadge event={ev} today={today} />
                             </div>

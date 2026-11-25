@@ -374,13 +374,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               {occ.event.description}
                             </p>
                           )}
-                          <div className="mt-2 flex items-center justify-end">
-                            <FutureEventBadge
-                              event={occ.event}
-                              today={today}
-                              isRecurringInstance={occ.isRecurringInstance}
-                            />
-                          </div>
+                          {!occ.event.recurrence && (
+                            <div className="mt-2 flex items-center justify-end">
+                              <FutureEventBadge
+                                event={occ.event}
+                                today={today}
+                                isRecurringInstance={occ.isRecurringInstance}
+                              />
+                            </div>
+                          )}
                         </button>
                       );
                     })}

@@ -100,7 +100,7 @@ export const TimelineEventRow: React.FC<TimelineEventRowProps> = ({
         )}
 
         {/* Secondary Metadata + Future Card Corner Badge */}
-        {(hasSecondary || isFuture) && (
+        {(hasSecondary || (isFuture && !event.recurrence)) && (
           <div
             className={`mt-3 pt-3 border-t flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500 dark:text-stone-400 ${
               isFuture
