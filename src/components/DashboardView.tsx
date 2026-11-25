@@ -14,7 +14,11 @@ import type {
   DueReminderItem,
   OnThisDayMemory,
 } from '../domain/phase2';
-import { formatEventGregorianDate, formatTodayHeader } from '../domain/timeline';
+import {
+  buildSortDateKey,
+  formatEventGregorianDate,
+  formatTodayHeader,
+} from '../domain/timeline';
 import type { Category, DateParts, TimelineEvent } from '../domain/types';
 import type { BackupSyncStatus } from '../pwa/autoFileBackup';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -50,6 +54,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onLoadSamples,
 }) => {
   const todayLabels = formatTodayHeader(today);
+  const todayKey = buildSortDateKey(today.year, today.month, today.day);
 
   return (
     <section className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-14 space-y-6">
@@ -84,40 +89,51 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
           </div>
 
-          <div className="divide-y divide-stone-100 dark:divide-stone-800">
-            {dueReminders.map((rem) => (
-              <div
-                key={rem.key}
-                className="py-2.5 first:pt-0 last:pb-0 flex flex-wrap items-center justify-between gap-2"
-              >
-                <button
-                  type="button"
-                  onClick={() => onSelectEvent(rem.event)}
-                  className="flex-1 min-w-0 text-right cursor-pointer group"
+          <div className="space-y-2.5">
+            {dueReminders.map((rem) => {
+              const isFutureRem = rem.occurrenceDateKey > todayKey;
+              return (
+                <div
+                  key={rem.key}
+                  className={`rounded-xl border px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 ${
+                    isFutureRem
+                      ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10'
+                      : 'border-stone-200/80 dark:border-stone-800 bg-[#FAF8F4] dark:bg-[#141413]'
+                  }`}
                 >
-                  <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 group-hover:text-[#8C3B2B] dark:group-hover:text-[#E28A6D] truncate">
-                    {rem.event.title}
-                  </p>
-                  {rem.event.description && (
-                    <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
-                      {rem.event.description}
+                  <button
+                    type="button"
+                    onClick={() => onSelectEvent(rem.event)}
+                    className="flex-1 min-w-0 text-right cursor-pointer group"
+                  >
+                    <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 group-hover:text-[#8C3B2B] dark:group-hover:text-[#E28A6D] truncate">
+                      {rem.event.title}
                     </p>
-                  )}
-                  <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
-                    {rem.labelAr} · الموعد: {rem.occurrenceDateKey}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDismissReminder(rem.key)}
-                  aria-label={`تجاهل تنبيه ${rem.event.title}`}
-                  className="min-h-[36px] inline-flex items-center gap-1 rounded-lg border border-stone-200 dark:border-stone-700 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer shrink-0"
-                >
-                  <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>تم الاطلاع</span>
-                </button>
-              </div>
-            ))}
+                    {rem.event.description && (
+                      <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                        {rem.event.description}
+                      </p>
+                    )}
+                    <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
+                      {rem.labelAr} · الموعد: {rem.occurrenceDateKey}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDismissReminder(rem.key)}
+                    aria-label={`تجاهل تنبيه ${rem.event.title}`}
+                    className={`min-h-[36px] inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium cursor-pointer shrink-0 ${
+                      isFutureRem
+                        ? 'border-sky-500/30 dark:border-sky-400/30 bg-white/70 dark:bg-[#1E1D1B]/70 text-stone-700 dark:text-stone-200 hover:bg-white'
+                        : 'border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                    }`}
+                  >
+                    <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>تم الاطلاع</span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -314,10 +330,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 {summary.nearestUpcoming.length === 0 ? (
                   <p className="text-sm text-stone-500 dark:text-stone-400">
-                    لا توجد مواعيد قادمة مسجلة بعد.
+                    لا توجد مواعيد قادمة خلال 30 يومًا.
                   </p>
                 ) : (
-                  <div className="divide-y divide-stone-100 dark:divide-stone-800">
+                  <div className="space-y-2.5">
                     {summary.nearestUpcoming.map((occ) => {
                       const cat = categoriesMap.get(occ.event.categoryId);
                       const colorMeta = CATEGORY_COLOR_META[cat?.colorKey ?? 'slate'];
@@ -326,10 +342,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           key={`${occ.event.id}-${occ.occurrenceDateKey}`}
                           type="button"
                           onClick={() => onSelectEvent(occ.event)}
-                          className="w-full py-3 first:pt-0 last:pb-0 text-right flex flex-col items-stretch group cursor-pointer"
+                          className="w-full rounded-xl border border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10 p-3.5 text-right flex flex-col items-stretch group hover:border-sky-500/60 dark:hover:border-sky-400/50 transition-colors cursor-pointer"
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                            <span className="inline-flex items-center gap-1.5 text-stone-500 dark:text-stone-400">
+                            <span className="inline-flex items-center gap-1.5 text-stone-600 dark:text-stone-300">
                               <span className={`font-medium ${colorMeta.textClass}`}>
                                 {cat?.name ?? 'عام'}
                               </span>

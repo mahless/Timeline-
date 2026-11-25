@@ -415,7 +415,7 @@ export function computeDashboardSummary(
 
   const pinnedUpcoming = upcoming.filter((o) => o.event.isPinned && !o.isToday);
   const nearestUpcoming = upcoming
-    .filter((o) => !o.isToday && o.daysRemaining <= 20)
+    .filter((o) => !o.isToday && o.daysRemaining <= 30)
     .sort((a, b) => a.daysRemaining - b.daysRemaining);
 
   return {

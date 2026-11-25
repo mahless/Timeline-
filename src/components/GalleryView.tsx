@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Download, ExternalLink, FileText, Images, X } from 'lucide-react';
-import { formatEventGregorianDate } from '../domain/timeline';
-import type { AttachmentRecord, Category, TimelineEvent } from '../domain/types';
+import { classifyTemporalPosition, formatEventGregorianDate } from '../domain/timeline';
+import type { AttachmentRecord, Category, DateParts, TimelineEvent } from '../domain/types';
 import { getAllAttachments } from '../storage/db';
 
 interface GalleryViewProps {
   events: TimelineEvent[];
   categories: Category[];
+  today: DateParts;
   lightboxItem: GalleryItem | null;
   setLightboxItem: (item: GalleryItem | null) => void;
   onSelectEvent: (event: TimelineEvent) => void;
@@ -27,6 +28,7 @@ function formatBytes(bytes: number): string {
 export const GalleryView: React.FC<GalleryViewProps> = ({
   events,
   categories,
+  today,
   lightboxItem,
   setLightboxItem,
   onSelectEvent,
@@ -154,10 +156,17 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredItems.map((item) => {
             const isImage = item.record.mimeType.startsWith('image/');
+            const isFuture = item.event
+              ? classifyTemporalPosition(item.event, today) === 'future'
+              : false;
             return (
               <article
                 key={item.record.id}
-                className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] overflow-hidden flex flex-col"
+                className={`rounded-2xl border overflow-hidden flex flex-col ${
+                  isFuture
+                    ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10'
+                    : 'border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B]'
+                }`}
               >
                 {isImage ? (
                   <button

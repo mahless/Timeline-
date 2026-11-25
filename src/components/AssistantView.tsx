@@ -2,7 +2,11 @@ import React, { useMemo, useState } from 'react';
 import { Loader2, Search, Send, Sparkles, WifiOff } from 'lucide-react';
 import { buildMemoryContextForAI, searchEventsSemanticOffline } from '../domain/assistant';
 import { CATEGORY_COLOR_META } from '../domain/defaults';
-import { formatEventGregorianDate, formatTodayHeader } from '../domain/timeline';
+import {
+  classifyTemporalPosition,
+  formatEventGregorianDate,
+  formatTodayHeader,
+} from '../domain/timeline';
 import type { Category, DateParts, EventThread, TimelineEvent } from '../domain/types';
 import { useOnlineStatus } from '../pwa/useOnlineStatus';
 
@@ -249,12 +253,17 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
                       if (!ev) return null;
                       const cat = categoriesMap.get(ev.categoryId);
                       const colorMeta = CATEGORY_COLOR_META[cat?.colorKey ?? 'slate'];
+                      const isFuture = classifyTemporalPosition(ev, today) === 'future';
                       return (
                         <button
                           key={ev.id}
                           type="button"
                           onClick={() => onSelectEvent(ev)}
-                          className="w-full text-right flex flex-col items-stretch rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] p-3 hover:border-[#8C3B2B] cursor-pointer"
+                          className={`w-full text-right flex flex-col items-stretch rounded-xl border p-3 transition-colors cursor-pointer ${
+                            isFuture
+                              ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10 hover:border-sky-500/60 dark:hover:border-sky-400/50'
+                              : 'border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] hover:border-[#8C3B2B]'
+                          }`}
                         >
                           <div className="flex flex-wrap items-center gap-x-2 text-xs text-stone-500 dark:text-stone-400">
                             <span className={`font-medium ${colorMeta.textClass}`}>
@@ -334,12 +343,17 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
                 {semanticHits.map(({ event, matchedConcepts }) => {
                   const cat = categoriesMap.get(event.categoryId);
                   const colorMeta = CATEGORY_COLOR_META[cat?.colorKey ?? 'slate'];
+                  const isFuture = classifyTemporalPosition(event, today) === 'future';
                   return (
                     <button
                       key={event.id}
                       type="button"
                       onClick={() => onSelectEvent(event)}
-                      className="w-full text-right flex flex-col items-stretch rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 hover:border-[#8C3B2B] cursor-pointer"
+                      className={`w-full text-right flex flex-col items-stretch rounded-2xl border p-4 transition-colors cursor-pointer ${
+                        isFuture
+                          ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10 hover:border-sky-500/60 dark:hover:border-sky-400/50'
+                          : 'border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] hover:border-[#8C3B2B]'
+                      }`}
                     >
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
                         <span className={`font-medium ${colorMeta.textClass}`}>

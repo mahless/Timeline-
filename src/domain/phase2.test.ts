@@ -122,20 +122,25 @@ test('computeDashboardSummary and computeArchiveStatistics aggregate accurately'
   const cats = createDefaultCategories();
   const events = [
     makeEvent('1', { year: 2026, month: 11, day: 25, isPinned: true, categoryId: 'cat-career' }),
-    makeEvent('2', { year: 2026, month: 12, day: 10, categoryId: 'cat-career' }),
+    makeEvent('2', { year: 2026, month: 12, day: 18, categoryId: 'cat-career' }), // 25 days away (<= 30)
+    makeEvent('4', { year: 2026, month: 12, day: 28, categoryId: 'cat-career' }), // 35 days away (> 30)
     makeEvent('3', { year: 2024, month: 11, day: 1, categoryId: 'cat-personal' }),
   ];
   const summary = computeDashboardSummary(events, TODAY);
-  assert.equal(summary.totalCount, 3);
-  assert.equal(summary.futureCount, 2);
+  assert.equal(summary.totalCount, 4);
+  assert.equal(summary.futureCount, 3);
   assert.equal(summary.pastCount, 1);
   assert.equal(summary.thisWeekCount, 1);
   assert.equal(summary.thisMonthCount, 2);
   assert.equal(summary.pinnedUpcoming.length, 1);
+  assert.deepEqual(
+    summary.nearestUpcoming.map((o) => o.event.id),
+    ['1', '2'],
+  );
 
   const stats = computeArchiveStatistics(events, cats);
   assert.equal(stats.mostActiveYear?.year, 2026);
-  assert.equal(stats.mostActiveYear?.count, 2);
+  assert.equal(stats.mostActiveYear?.count, 3);
   assert.equal(stats.mostActiveMonth?.month, 11);
   assert.equal(stats.pinnedCount, 1);
 });

@@ -2,7 +2,11 @@ import React from 'react';
 import { Bell, GitBranch, MapPin, Paperclip, Pin, Repeat } from 'lucide-react';
 import { CATEGORY_COLOR_META } from '../domain/defaults';
 import { RECURRENCE_LABELS } from '../domain/phase2';
-import { formatEventGregorianDate, getRelativeTimeLabel } from '../domain/timeline';
+import {
+  classifyTemporalPosition,
+  formatEventGregorianDate,
+  getRelativeTimeLabel,
+} from '../domain/timeline';
 import type { Category, DateParts, EventThread, TimelineEvent } from '../domain/types';
 
 interface TimelineEventRowProps {
@@ -23,6 +27,7 @@ export const TimelineEventRow: React.FC<TimelineEventRowProps> = ({
   const colorMeta = CATEGORY_COLOR_META[category?.colorKey ?? 'slate'];
   const gregorianText = formatEventGregorianDate(event);
   const relativeText = getRelativeTimeLabel(event, today);
+  const isFuture = classifyTemporalPosition(event, today) === 'future';
 
   const hasSecondary =
     Boolean(event.location) ||
@@ -44,7 +49,11 @@ export const TimelineEventRow: React.FC<TimelineEventRowProps> = ({
         type="button"
         onClick={() => onSelect(event)}
         aria-label={`عرض تفاصيل الحدث: ${event.title}`}
-        className="group flex flex-col items-stretch w-full min-w-0 text-right rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5 transition-colors hover:border-stone-300 dark:hover:border-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8C3B2B] cursor-pointer"
+        className={`group flex flex-col items-stretch w-full min-w-0 text-right rounded-2xl border p-4 sm:p-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8C3B2B] cursor-pointer ${
+          isFuture
+            ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10 hover:border-sky-500/60 dark:hover:border-sky-400/50'
+            : 'border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] hover:border-stone-300 dark:hover:border-stone-700'
+        }`}
       >
         {/* Clean Unboxed Metadata Line (Zero-Pill Discipline) */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
@@ -91,7 +100,13 @@ export const TimelineEventRow: React.FC<TimelineEventRowProps> = ({
 
         {/* Secondary Metadata: Location, Thread, Recurrence, Reminders, Keywords, Attachments */}
         {hasSecondary && (
-          <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800/80 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
+          <div
+            className={`mt-3 pt-3 border-t flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500 dark:text-stone-400 ${
+              isFuture
+                ? 'border-sky-500/20 dark:border-sky-400/20'
+                : 'border-stone-100 dark:border-stone-800/80'
+            }`}
+          >
             {thread && (
               <span className="inline-flex items-center gap-1 text-stone-700 dark:text-stone-300">
                 <GitBranch className="w-3.5 h-3.5 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />

@@ -7,7 +7,8 @@ import {
   type DueReminderItem,
   type UpcomingOccurrence,
 } from '../domain/phase2';
-import type { Category, TimelineEvent } from '../domain/types';
+import { buildSortDateKey } from '../domain/timeline';
+import type { Category, DateParts, TimelineEvent } from '../domain/types';
 import {
   type NotificationPermissionState,
   getNotificationPermission,
@@ -15,6 +16,7 @@ import {
 } from '../pwa/notifications';
 
 interface UpcomingViewProps {
+  today: DateParts;
   occurrences: UpcomingOccurrence[];
   dueReminders: DueReminderItem[];
   categoriesMap: Map<string, Category>;
@@ -24,6 +26,7 @@ interface UpcomingViewProps {
 }
 
 export const UpcomingView: React.FC<UpcomingViewProps> = ({
+  today,
   occurrences,
   dueReminders,
   categoriesMap,
@@ -31,6 +34,7 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
   onTogglePin,
   onDismissReminder,
 }) => {
+  const todayKey = buildSortDateKey(today.year, today.month, today.day);
   const [notifPerm, setNotifPerm] = useState<NotificationPermissionState>(() =>
     getNotificationPermission(),
   );
@@ -41,7 +45,9 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
     setNotifPerm(next);
   };
 
-  const filtered = occurrences.filter((occ) => {
+  const withinSixtyDays = occurrences.filter((occ) => occ.daysRemaining <= 60);
+
+  const filtered = withinSixtyDays.filter((occ) => {
     if (filterMode === 'pinned') return !!occ.event.isPinned;
     if (filterMode === 'recurring') return !!occ.event.recurrence;
     return true;
@@ -54,11 +60,16 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
     const cat = categoriesMap.get(occ.event.categoryId);
     const colorMeta = CATEGORY_COLOR_META[cat?.colorKey ?? 'slate'];
     const rec = occ.event.recurrence;
+    const isFuture = !occ.isToday;
 
     return (
       <article
         key={`${occ.event.id}-${occ.occurrenceDateKey}`}
-        className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5 flex flex-col gap-3"
+        className={`rounded-2xl border p-4 sm:p-5 flex flex-col gap-3 transition-colors ${
+          isFuture
+            ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10 hover:border-sky-500/60 dark:hover:border-sky-400/50'
+            : 'border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B]'
+        }`}
       >
         <div className="flex flex-wrap items-start justify-between gap-2">
           <button
@@ -103,7 +114,9 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
             className={`min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl border transition-colors cursor-pointer shrink-0 ${
               occ.event.isPinned
                 ? 'border-[#8C3B2B] dark:border-[#E28A6D] bg-[#8C3B2B]/10 dark:bg-[#E28A6D]/15 text-[#8C3B2B] dark:text-[#E28A6D]'
-                : 'border-stone-200 dark:border-stone-700 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800'
+                : isFuture
+                  ? 'border-sky-500/30 dark:border-sky-400/30 text-stone-600 dark:text-stone-300 hover:bg-sky-500/15'
+                  : 'border-stone-200 dark:border-stone-700 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
           >
             <Pin className="w-4 h-4" aria-hidden="true" />
@@ -111,7 +124,13 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
         </div>
 
         {/* Countdown + Recurrence + Reminders Footer */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-stone-100 dark:border-stone-800/80 text-xs">
+        <div
+          className={`flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t text-xs ${
+            isFuture
+              ? 'border-sky-500/20 dark:border-sky-400/20'
+              : 'border-stone-100 dark:border-stone-800/80'
+          }`}
+        >
           <span className="inline-flex items-center gap-1.5 font-bold text-[#8C3B2B] dark:text-[#E28A6D] tabular-nums">
             <CalendarClock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span>{occ.countdownLabel}</span>
@@ -148,7 +167,7 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
             الأحداث المستقبلية والتذكيرات
           </h1>
           <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-            عداد تنازلي للمواعيد القادمة والأحداث المتكررة مع إمكانية التثبيت وضبط التنبيهات.
+            عداد تنازلي للمواعيد خلال 60 يومًا القادمة والأحداث المتكررة مع إمكانية التثبيت وضبط التنبيهات.
           </p>
         </div>
 
@@ -181,7 +200,7 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
       <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-white dark:bg-[#1E1D1B] border border-stone-200/90 dark:border-stone-800 p-1.5">
         {(
           [
-            { id: 'all', label: `كل القادمة (${occurrences.length})` },
+            { id: 'all', label: `كل القادمة (${withinSixtyDays.length})` },
             { id: 'pinned', label: 'المثبتة فقط' },
             { id: 'recurring', label: 'المتكررة فقط' },
           ] as Array<{ id: 'all' | 'pinned' | 'recurring'; label: string }>
@@ -209,35 +228,49 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
               تنبيهات مستحقة الآن
             </h2>
           </div>
-          <div className="divide-y divide-stone-100 dark:divide-stone-800">
-            {dueReminders.map((rem) => (
-              <div key={rem.key} className="py-2 flex flex-wrap items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => onSelectEvent(rem.event)}
-                  className="text-right min-w-0 flex-1 cursor-pointer"
+          <div className="space-y-2.5">
+            {dueReminders.map((rem) => {
+              const isFutureRem = rem.occurrenceDateKey > todayKey;
+              return (
+                <div
+                  key={rem.key}
+                  className={`rounded-xl border px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 ${
+                    isFutureRem
+                      ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10'
+                      : 'border-stone-200/80 dark:border-stone-800 bg-[#FAF8F4] dark:bg-[#141413]'
+                  }`}
                 >
-                  <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 truncate">
-                    {rem.event.title}
-                  </p>
-                  {rem.event.description && (
-                    <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
-                      {rem.event.description}
+                  <button
+                    type="button"
+                    onClick={() => onSelectEvent(rem.event)}
+                    className="text-right min-w-0 flex-1 cursor-pointer"
+                  >
+                    <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 truncate">
+                      {rem.event.title}
                     </p>
-                  )}
-                  <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
-                    {rem.labelAr} · {rem.occurrenceDateKey}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDismissReminder(rem.key)}
-                  className="min-h-[36px] rounded-lg border border-stone-200 dark:border-stone-700 px-3 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
-                >
-                  تم الاطلاع
-                </button>
-              </div>
-            ))}
+                    {rem.event.description && (
+                      <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                        {rem.event.description}
+                      </p>
+                    )}
+                    <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
+                      {rem.labelAr} · {rem.occurrenceDateKey}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDismissReminder(rem.key)}
+                    className={`min-h-[36px] rounded-lg border px-3 text-xs font-medium cursor-pointer ${
+                      isFutureRem
+                        ? 'border-sky-500/30 dark:border-sky-400/30 bg-white/70 dark:bg-[#1E1D1B]/70 text-stone-700 dark:text-stone-200 hover:bg-white'
+                        : 'border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                    }`}
+                  >
+                    تم الاطلاع
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

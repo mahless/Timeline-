@@ -624,6 +624,7 @@ export default function App() {
           />
         ) : activeView === 'upcoming' ? (
           <UpcomingView
+            today={today}
             occurrences={upcomingOccurrences}
             dueReminders={dueReminders}
             categoriesMap={categoriesMap}
@@ -636,6 +637,7 @@ export default function App() {
             threads={threads}
             events={events}
             categoriesMap={categoriesMap}
+            today={today}
             onCreateThread={handleCreateThread}
             onDeleteThread={handleDeleteThread}
             onSelectEvent={handleSelectEvent}
@@ -650,6 +652,7 @@ export default function App() {
           <GalleryView
             events={events}
             categories={categories}
+            today={today}
             lightboxItem={lightboxItem}
             setLightboxItem={(item) => {
               if (item) {

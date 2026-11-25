@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { ArrowRight, GitBranch, Plus, Trash2 } from 'lucide-react';
 import { CATEGORY_COLOR_META } from '../domain/defaults';
-import { compareEventsDesc, formatEventGregorianDate } from '../domain/timeline';
+import {
+  classifyTemporalPosition,
+  compareEventsDesc,
+  formatEventGregorianDate,
+} from '../domain/timeline';
 import type {
   Category,
   CategoryColorKey,
+  DateParts,
   EventThread,
   TimelineEvent,
 } from '../domain/types';
@@ -13,6 +18,7 @@ interface ThreadsViewProps {
   threads: EventThread[];
   events: TimelineEvent[];
   categoriesMap: Map<string, Category>;
+  today: DateParts;
   onCreateThread: (title: string, description: string, colorKey: CategoryColorKey) => Promise<void>;
   onDeleteThread: (threadId: string) => Promise<void>;
   onSelectEvent: (event: TimelineEvent) => void;
@@ -32,6 +38,7 @@ export const ThreadsView: React.FC<ThreadsViewProps> = ({
   threads,
   events,
   categoriesMap,
+  today,
   onCreateThread,
   onDeleteThread,
   onSelectEvent,
@@ -128,6 +135,7 @@ export const ThreadsView: React.FC<ThreadsViewProps> = ({
             {linkedEvents.map((ev) => {
               const cat = categoriesMap.get(ev.categoryId);
               const catMeta = CATEGORY_COLOR_META[cat?.colorKey ?? 'slate'];
+              const isFuture = classifyTemporalPosition(ev, today) === 'future';
               return (
                 <article key={ev.id} className="relative pr-6 sm:pr-8">
                   <span
@@ -137,7 +145,11 @@ export const ThreadsView: React.FC<ThreadsViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectEvent(ev)}
-                    className="w-full flex flex-col items-stretch text-right rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5 hover:border-stone-300 dark:hover:border-stone-700 cursor-pointer"
+                    className={`w-full flex flex-col items-stretch text-right rounded-2xl border p-4 sm:p-5 transition-colors cursor-pointer ${
+                      isFuture
+                        ? 'border-sky-500/35 dark:border-sky-400/30 bg-sky-500/10 dark:bg-sky-500/10 hover:border-sky-500/60 dark:hover:border-sky-400/50'
+                        : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] hover:border-stone-300 dark:hover:border-stone-700'
+                    }`}
                   >
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
                       <span className={`font-medium ${catMeta.textClass}`}>
