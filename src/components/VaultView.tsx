@@ -390,9 +390,9 @@ export const VaultView: React.FC<VaultViewProps> = ({
         {/* Backup & Restore Card */}
         <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <Download className="w-5 h-5 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              النسخ الاحتياطي والاستعادة (مع المرفقات)
+            <h2 className="inline-flex items-center gap-2 px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+              <Download className="w-4 h-4 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+              <span>النسخ الاحتياطي والاستعادة (مع المرفقات)</span>
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
@@ -542,9 +542,9 @@ export const VaultView: React.FC<VaultViewProps> = ({
         {/* Reports Export Card (Excel / PDF) */}
         <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              تصدير التقارير (Excel و PDF)
+            <h2 className="inline-flex items-center gap-2 px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+              <FileSpreadsheet className="w-4 h-4 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+              <span>تصدير التقارير (Excel و PDF)</span>
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
@@ -615,12 +615,10 @@ export const VaultView: React.FC<VaultViewProps> = ({
         {/* Security PIN Lock Card */}
         <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
-              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                قفل التطبيق برمز سري (PIN)
-              </h2>
-            </div>
+            <h2 className="inline-flex items-center gap-2 px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+              <Shield className="w-4 h-4 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+              <span>قفل التطبيق برمز سري (PIN)</span>
+            </h2>
             <span className="text-xs font-medium text-stone-500 dark:text-stone-400">
               {pinConfigured ? 'مفعّل' : 'غير مفعّل'}
             </span>
@@ -691,9 +689,9 @@ export const VaultView: React.FC<VaultViewProps> = ({
         {/* Appearance & Categories Card */}
         <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <TypeIcon className="w-5 h-5 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              تخصيص المظهر والقراءة
+            <h2 className="inline-flex items-center gap-2 px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+              <TypeIcon className="w-4 h-4 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+              <span>تخصيص المظهر والقراءة</span>
             </h2>
           </div>
 

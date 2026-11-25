@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bell, FileText, GitBranch, Paperclip, Pin, Plus, Repeat, Trash2, X } from 'lucide-react';
+import { Bell, FileText, GitBranch, Paperclip, Pin, Repeat, Trash2, X } from 'lucide-react';
 import {
   GREGORIAN_MONTH_NAMES,
   HIJRI_MONTH_NAMES,
@@ -90,10 +90,9 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const defaultCategoryId = categories[0]?.id ?? 'cat-personal';
 
   const initialCal: CalendarType = editingEvent?.calendarInput ?? 'gregorian';
-  const initialPrecision: DatePrecision = editingEvent?.datePrecision ?? 'exact';
+  const datePrecision: DatePrecision = 'exact';
 
   const [title, setTitle] = useState(editingEvent?.title ?? '');
-  const [datePrecision, setDatePrecision] = useState<DatePrecision>(initialPrecision);
   const [calendarInput, setCalendarInput] = useState<CalendarType>(initialCal);
   const [year, setYear] = useState<number>(() => {
     if (!editingEvent) return today.year;
@@ -112,12 +111,13 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       : (editingEvent.gregorianDay ?? 1);
   });
 
-  const [time, setTime] = useState(editingEvent?.time ?? '');
   const [categoryId, setCategoryId] = useState(editingEvent?.categoryId ?? defaultCategoryId);
-  const [location, setLocation] = useState(editingEvent?.location ?? '');
   const [description, setDescription] = useState(editingEvent?.description ?? '');
-  const [keywords, setKeywords] = useState<string[]>(editingEvent?.keywords ?? []);
-  const [keywordDraft, setKeywordDraft] = useState('');
+
+  // Preserved from editing event if present
+  const time = editingEvent?.time ?? '';
+  const location = editingEvent?.location ?? '';
+  const keywords = editingEvent?.keywords ?? [];
 
   // Phase 2 fields
   const [isPinned, setIsPinned] = useState<boolean>(!!editingEvent?.isPinned);
@@ -195,22 +195,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const handleSwitchCalendar = (nextCal: CalendarType) => {
     if (nextCal === calendarInput) return;
     if (nextCal === 'hijri') {
-      const h = gregorianToHijri(
-        datePrecision,
-        year,
-        datePrecision !== 'year' ? month : undefined,
-        datePrecision === 'exact' ? day : undefined,
-      );
+      const h = gregorianToHijri('exact', year, month, day);
       setYear(h.hijriYear);
       if (h.hijriMonth) setMonth(h.hijriMonth);
       if (h.hijriDay) setDay(h.hijriDay);
     } else {
-      const g = hijriToGregorian(
-        datePrecision,
-        year,
-        datePrecision !== 'year' ? month : undefined,
-        datePrecision === 'exact' ? day : undefined,
-      );
+      const g = hijriToGregorian('exact', year, month, day);
       setYear(g.year);
       if (g.month) setMonth(g.month);
       if (g.day) setDay(g.day);
@@ -223,23 +213,13 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     try {
       if (calendarInput === 'gregorian') {
         if (!Number.isInteger(year) || year < 1900 || year > 2150) return '';
-        const h = gregorianToHijri(
-          datePrecision,
-          year,
-          datePrecision !== 'year' ? month : undefined,
-          datePrecision === 'exact' ? day : undefined,
-        );
+        const h = gregorianToHijri('exact', year, month, day);
         return `الموافق هجريًا: ${h.formattedAr}`;
       } else {
         if (!Number.isInteger(year) || year < 1300 || year > 1580) return '';
-        const g = hijriToGregorian(
-          datePrecision,
-          year,
-          datePrecision !== 'year' ? month : undefined,
-          datePrecision === 'exact' ? day : undefined,
-        );
+        const g = hijriToGregorian('exact', year, month, day);
         return `الموافق ميلاديًا: ${formatEventGregorianDate({
-          datePrecision,
+          datePrecision: 'exact',
           gregorianYear: g.year,
           gregorianMonth: g.month,
           gregorianDay: g.day,
@@ -248,22 +228,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     } catch {
       return '';
     }
-  }, [calendarInput, datePrecision, year, month, day]);
+  }, [calendarInput, year, month, day]);
 
   const toggleReminderOffset = (offset: ReminderOffset) => {
     setSelectedReminderOffsets((prev) =>
       prev.includes(offset) ? prev.filter((item) => item !== offset) : [...prev, offset],
     );
-  };
-
-  const addKeywordsFromDraft = () => {
-    const parts = keywordDraft
-      .split(/[،,]/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (parts.length === 0) return;
-    setKeywords((prev) => Array.from(new Set([...prev, ...parts])));
-    setKeywordDraft('');
   };
 
   const handleFilePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -301,12 +271,6 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const extraKeywords = keywordDraft
-      .split(/[،,]/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const mergedKeywords = Array.from(new Set([...keywords, ...extraKeywords]));
-
     const builtReminders: ReminderRule[] | undefined =
       selectedReminderOffsets.length > 0
         ? selectedReminderOffsets.map((offset) => {
@@ -321,16 +285,16 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
 
     const input: EventFormInput = {
       title,
-      datePrecision,
+      datePrecision: 'exact',
       calendarInput,
       year,
-      month: datePrecision !== 'year' ? month : undefined,
-      day: datePrecision === 'exact' ? day : undefined,
+      month,
+      day,
       time: time || undefined,
       categoryId,
       description,
       location: location || undefined,
-      keywords: mergedKeywords,
+      keywords,
       isPinned,
       threadId: threadId || undefined,
       recurrence:
@@ -439,38 +403,35 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             )}
           </div>
 
-          {/* Date Precision & Calendar Switch */}
-          <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#141413] p-4 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2.5">
-              <div className="flex flex-wrap items-center gap-1 rounded-xl bg-stone-100 dark:bg-stone-900 p-1">
-                {(['exact', 'month', 'year'] as DatePrecision[]).map((prec) => {
-                  const labels: Record<DatePrecision, string> = {
-                    exact: 'تاريخ دقيق',
-                    month: 'شهر وسنة',
-                    year: 'سنة فقط',
-                  };
-                  return (
-                    <button
-                      key={prec}
-                      type="button"
-                      onClick={() => setDatePrecision(prec)}
-                      className={`min-h-[36px] rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
-                        datePrecision === prec
-                          ? 'bg-white dark:bg-[#1E1D1B] text-stone-900 dark:text-stone-100 shadow-xs'
-                          : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
-                      }`}
-                    >
-                      {labels[prec]}
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Description (Moved directly below Title) */}
+          <div>
+            <label htmlFor="ev-description" className="block text-sm font-medium text-stone-800 dark:text-stone-200">
+              الوصف والتفاصيل
+            </label>
+            <textarea
+              id="ev-description"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="اكتب تفاصيل الحدث أو الذكرى، الأشخاص، أو ما يهمك تذكره لاحقًا..."
+              className="mt-1.5 w-full min-w-0 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] p-3 text-sm leading-relaxed text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:border-[#8C3B2B] focus:outline-none"
+            />
+            {errors.description && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.description}</p>
+            )}
+          </div>
 
-              <div className="flex items-center gap-1 rounded-xl bg-stone-100 dark:bg-stone-900 p-1">
+          {/* Date Card: Calendar Switch & Day/Month/Year in one row */}
+          <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#141413] p-4 space-y-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-stone-800 dark:text-stone-200">
+                تاريخ الحدث
+              </span>
+              <div className="inline-flex items-center gap-1 rounded-xl bg-stone-100 dark:bg-stone-900 p-1">
                 <button
                   type="button"
                   onClick={() => handleSwitchCalendar('gregorian')}
-                  className={`min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                  className={`min-h-[34px] rounded-lg px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                     calendarInput === 'gregorian'
                       ? 'bg-white dark:bg-[#1E1D1B] text-stone-900 dark:text-stone-100 shadow-xs'
                       : 'text-stone-600 dark:text-stone-400'
@@ -481,7 +442,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 <button
                   type="button"
                   onClick={() => handleSwitchCalendar('hijri')}
-                  className={`min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                  className={`min-h-[34px] rounded-lg px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
                     calendarInput === 'hijri'
                       ? 'bg-white dark:bg-[#1E1D1B] text-stone-900 dark:text-stone-100 shadow-xs'
                       : 'text-stone-600 dark:text-stone-400'
@@ -492,51 +453,47 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               </div>
             </div>
 
-            {/* Date Inputs */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {datePrecision === 'exact' && (
-                <div className="min-w-0">
-                  <label htmlFor="ev-day" className="block text-xs text-stone-500 dark:text-stone-400">
-                    اليوم
-                  </label>
-                  <select
-                    id="ev-day"
-                    value={day}
-                    onChange={(e) => setDay(Number(e.target.value))}
-                    className="mt-1 w-full min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#1E1D1B] px-3 text-sm tabular-nums text-stone-900 dark:text-stone-100"
-                  >
-                    {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {datePrecision !== 'year' && (
-                <div className="min-w-0">
-                  <label htmlFor="ev-month" className="block text-xs text-stone-500 dark:text-stone-400">
-                    الشهر
-                  </label>
-                  <select
-                    id="ev-month"
-                    value={month}
-                    onChange={(e) => setMonth(Number(e.target.value))}
-                    className="mt-1 w-full min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#1E1D1B] px-3 text-sm text-stone-900 dark:text-stone-100"
-                  >
-                    {monthNames.map((mName, idx) => (
-                      <option key={mName} value={idx + 1}>
-                        {idx + 1} - {mName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+            {/* Date Inputs on the same row: اليوم، الشهر، السنة */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="min-w-0">
+                <label htmlFor="ev-day" className="block text-xs text-stone-500 dark:text-stone-400 mb-1">
+                  اليوم
+                </label>
+                <select
+                  id="ev-day"
+                  value={day}
+                  onChange={(e) => setDay(Number(e.target.value))}
+                  className="w-full min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#1E1D1B] px-2 sm:px-3 text-xs sm:text-sm tabular-nums text-stone-900 dark:text-stone-100"
+                >
+                  {Array.from({ length: maxDay }, (_, i) => i + 1).map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div className="min-w-0">
-                <label htmlFor="ev-year" className="block text-xs text-stone-500 dark:text-stone-400">
-                  {calendarInput === 'hijri' ? 'السنة الهجرية' : 'السنة الميلادية'}
+                <label htmlFor="ev-month" className="block text-xs text-stone-500 dark:text-stone-400 mb-1">
+                  الشهر
+                </label>
+                <select
+                  id="ev-month"
+                  value={month}
+                  onChange={(e) => setMonth(Number(e.target.value))}
+                  className="w-full min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#1E1D1B] px-1.5 sm:px-2 text-xs sm:text-sm text-stone-900 dark:text-stone-100 truncate"
+                >
+                  {monthNames.map((mName, idx) => (
+                    <option key={mName} value={idx + 1}>
+                      {idx + 1} - {mName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="min-w-0">
+                <label htmlFor="ev-year" className="block text-xs text-stone-500 dark:text-stone-400 mb-1">
+                  {calendarInput === 'hijri' ? 'السنة (هـ)' : 'السنة (م)'}
                 </label>
                 <input
                   id="ev-year"
@@ -545,7 +502,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   max={calendarInput === 'hijri' ? 1580 : 2150}
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  className="mt-1 w-full min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#1E1D1B] px-3 text-sm tabular-nums text-stone-900 dark:text-stone-100"
+                  className="w-full min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#1E1D1B] px-2 sm:px-3 text-xs sm:text-sm tabular-nums text-stone-900 dark:text-stone-100"
                 />
               </div>
             </div>
@@ -561,7 +518,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             )}
           </div>
 
-          {/* Category + Optional Time */}
+          {/* Category & Thread Link */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="min-w-0">
               <label htmlFor="ev-category" className="block text-sm font-medium text-stone-800 dark:text-stone-200">
@@ -585,25 +542,6 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             </div>
 
             <div className="min-w-0">
-              <label htmlFor="ev-time" className="block text-sm font-medium text-stone-800 dark:text-stone-200">
-                الوقت (اختياري)
-              </label>
-              <input
-                id="ev-time"
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="mt-1.5 w-full min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] px-3 text-sm tabular-nums text-stone-900 dark:text-stone-100"
-              />
-              {errors.time && (
-                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.time}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Phase 2: Pin + Thread Link */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="min-w-0">
               <label htmlFor="ev-thread" className="block text-sm font-medium text-stone-800 dark:text-stone-200">
                 <span className="inline-flex items-center gap-1.5">
                   <GitBranch className="w-3.5 h-3.5 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
@@ -624,22 +562,23 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 ))}
               </select>
             </div>
+          </div>
 
-            <div className="flex items-end min-w-0">
-              <button
-                type="button"
-                onClick={() => setIsPinned((v) => !v)}
-                aria-pressed={isPinned}
-                className={`w-full min-h-[44px] flex items-center justify-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors cursor-pointer ${
-                  isPinned
-                    ? 'border-[#8C3B2B] dark:border-[#E28A6D] bg-[#8C3B2B]/10 dark:bg-[#E28A6D]/15 text-[#8C3B2B] dark:text-[#E28A6D]'
-                    : 'border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] text-stone-700 dark:text-stone-300'
-                }`}
-              >
-                <Pin className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>{isPinned ? 'مثبت في الأحداث القادمة' : 'تثبيت الحدث في القادمة'}</span>
-              </button>
-            </div>
+          {/* Pin */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setIsPinned((v) => !v)}
+              aria-pressed={isPinned}
+              className={`w-full min-h-[44px] flex items-center justify-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                isPinned
+                  ? 'border-[#8C3B2B] dark:border-[#E28A6D] bg-[#8C3B2B]/10 dark:bg-[#E28A6D]/15 text-[#8C3B2B] dark:text-[#E28A6D]'
+                  : 'border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] text-stone-700 dark:text-stone-300'
+              }`}
+            >
+              <Pin className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span>{isPinned ? 'مثبت في الأحداث القادمة' : 'تثبيت الحدث في القادمة'}</span>
+            </button>
           </div>
 
           {/* Phase 2: Recurrence Settings */}
@@ -742,85 +681,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             )}
           </div>
 
-          {/* Location */}
-          <div>
-            <label htmlFor="ev-location" className="block text-sm font-medium text-stone-800 dark:text-stone-200">
-              الموقع (اختياري)
-            </label>
-            <input
-              id="ev-location"
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="مثال: الرياض، القاهرة، منزل العائلة..."
-              className="mt-1.5 w-full min-w-0 min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] px-3.5 py-2.5 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
-            />
-          </div>
 
-          {/* Description */}
-          <div>
-            <label htmlFor="ev-description" className="block text-sm font-medium text-stone-800 dark:text-stone-200">
-              الوصف والتفاصيل
-            </label>
-            <textarea
-              id="ev-description"
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="اكتب تفاصيل الحدث أو الذكرى، الأشخاص، أو ما يهمك تذكره لاحقًا..."
-              className="mt-1.5 w-full min-w-0 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] p-3.5 text-sm leading-relaxed text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
-            />
-            {errors.description && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.description}</p>
-            )}
-          </div>
-
-          {/* Keywords */}
-          <div>
-            <label htmlFor="ev-keywords" className="block text-sm font-medium text-stone-800 dark:text-stone-200">
-              الكلمات المفتاحية (اختياري)
-            </label>
-            <div className="mt-1.5 flex items-center gap-2 min-w-0">
-              <input
-                id="ev-keywords"
-                type="text"
-                value={keywordDraft}
-                onChange={(e) => setKeywordDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addKeywordsFromDraft();
-                  }
-                }}
-                placeholder="اكتب كلمة واضغط إضافة أو افصل بفاصلة"
-                className="flex-1 min-w-0 min-h-[44px] rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] px-3.5 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400"
-              />
-              <button
-                type="button"
-                onClick={addKeywordsFromDraft}
-                className="min-h-[44px] inline-flex items-center gap-1 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#141413] px-3.5 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer shrink-0"
-              >
-                <Plus className="w-4 h-4" aria-hidden="true" />
-                <span>إضافة</span>
-              </button>
-            </div>
-            {keywords.length > 0 && (
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                {keywords.map((kw) => (
-                  <button
-                    key={kw}
-                    type="button"
-                    onClick={() => setKeywords((prev) => prev.filter((item) => item !== kw))}
-                    aria-label={`إزالة الكلمة المفتاحية ${kw}`}
-                    className="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-[#141413] px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 hover:border-red-300 hover:text-red-700 dark:hover:text-red-400 cursor-pointer"
-                  >
-                    <span>{kw}</span>
-                    <X className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           {/* Attachments */}
           <div>

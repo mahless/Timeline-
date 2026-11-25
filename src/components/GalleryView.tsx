@@ -186,6 +186,11 @@ export const GalleryView: React.FC<GalleryViewProps> = ({
                     <p className="text-sm font-bold text-stone-900 dark:text-stone-100 truncate">
                       {item.event ? item.event.title : item.record.name}
                     </p>
+                    {item.event?.description && (
+                      <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                        {item.event.description}
+                      </p>
+                    )}
                     <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 tabular-nums truncate">
                       {item.event ? formatEventGregorianDate(item.event) : item.record.name} ·{' '}
                       {formatBytes(item.record.size)}

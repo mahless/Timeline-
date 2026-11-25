@@ -99,9 +99,11 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({
         onSubmit={handleCreate}
         className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4"
       >
-        <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-          إضافة تصنيف جديد
-        </h2>
+        <div>
+          <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+            إضافة تصنيف جديد
+          </h2>
+        </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
@@ -276,9 +278,11 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({
 
       {/* App Preferences & PWA Install */}
       <div className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
-        <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-          المظهر والتطبيق المحلي
-        </h2>
+        <div>
+          <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+            المظهر والتطبيق المحلي
+          </h2>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             type="button"

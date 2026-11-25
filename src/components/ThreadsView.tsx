@@ -193,9 +193,11 @@ export const ThreadsView: React.FC<ThreadsViewProps> = ({
           onSubmit={handleSubmit}
           className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4"
         >
-          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            إنشاء سلسلة أحداث جديدة
-          </h2>
+          <div>
+            <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+              إنشاء سلسلة أحداث جديدة
+            </h2>
+          </div>
           <div>
             <label htmlFor="thread-title" className="block text-xs font-medium text-stone-700 dark:text-stone-300">
               عنوان السلسلة

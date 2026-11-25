@@ -895,8 +895,10 @@ export default function App() {
                     {/* Future Years Section */}
                     {horizon.futureYears.length > 0 && (
                       <div className="space-y-8">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-[#8C3B2B] dark:text-[#E28A6D]">
-                          <span>الأحداث المستقبلية والخطط القادمة</span>
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-[#8C3B2B] dark:text-[#E28A6D] shadow-2xs">
+                            الأحداث المستقبلية والخطط القادمة
+                          </span>
                         </div>
                         {renderYearGroups(horizon.futureYears, 'future')}
                       </div>
@@ -938,8 +940,10 @@ export default function App() {
                     {/* Past Years Section */}
                     {horizon.pastYears.length > 0 && (
                       <div className="space-y-8">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-stone-500 dark:text-stone-400">
-                          <span>الذكريات والأحداث الماضية</span>
+                        <div className="flex items-center">
+                          <span className="inline-flex items-center px-3 py-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-700 dark:text-stone-300 shadow-2xs">
+                            الذكريات والأحداث الماضية
+                          </span>
                         </div>
                         {renderYearGroups(horizon.pastYears, 'past')}
                       </div>

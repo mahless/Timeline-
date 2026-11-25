@@ -79,9 +79,11 @@ export const StatsView: React.FC<StatsViewProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Distribution by Year */}
           <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              الأحداث حسب السنة
-            </h2>
+            <div>
+              <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+                الأحداث حسب السنة
+              </h2>
+            </div>
             <div className="space-y-3">
               {stats.byYear.map((item) => {
                 const widthPct = Math.max(8, Math.round((item.count / maxYearCount) * 100));
@@ -107,9 +109,11 @@ export const StatsView: React.FC<StatsViewProps> = ({
 
           {/* Distribution by Category */}
           <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              الأحداث حسب التصنيف
-            </h2>
+            <div>
+              <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+                الأحداث حسب التصنيف
+              </h2>
+            </div>
             <div className="space-y-3">
               {stats.byCategory.map((item) => {
                 const meta = CATEGORY_COLOR_META[item.colorKey];
@@ -141,9 +145,11 @@ export const StatsView: React.FC<StatsViewProps> = ({
 
           {/* Monthly Activity Report (Responsive Grid — Zero Horizontal Scroll) */}
           <div className="lg:col-span-2 rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
-            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              توزيع النشاط عبر أشهر السنة
-            </h2>
+            <div>
+              <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+                توزيع النشاط عبر أشهر السنة
+              </h2>
+            </div>
             <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-12 gap-2.5 items-end">
               {stats.byMonthActivity.map((m) => {
                 const heightPct = m.count > 0 ? Math.max(16, Math.round((m.count / maxMonthCount) * 100)) : 6;

@@ -71,8 +71,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           className="rounded-2xl border border-[#8C3B2B]/30 dark:border-[#E28A6D]/30 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5 space-y-3"
         >
           <div className="flex items-center justify-between gap-2">
-            <h2 className="inline-flex items-center gap-2 text-sm font-bold text-[#8C3B2B] dark:text-[#E28A6D]">
-              <Bell className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <h2 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-[#8C3B2B] dark:text-[#E28A6D] shadow-2xs">
+              <Bell className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
               <span>تذكيرات نشطة ({dueReminders.length})</span>
             </h2>
             <button
@@ -98,7 +98,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 group-hover:text-[#8C3B2B] dark:group-hover:text-[#E28A6D] truncate">
                     {rem.event.title}
                   </p>
-                  <p className="text-xs text-stone-500 dark:text-stone-400 tabular-nums">
+                  {rem.event.description && (
+                    <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                      {rem.event.description}
+                    </p>
+                  )}
+                  <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
                     {rem.labelAr} · الموعد: {rem.occurrenceDateKey}
                   </p>
                 </button>
@@ -178,26 +183,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       ) : (
         <>
-          {/* Summary KPI Grid (2-col, zero horizontal scroll) */}
+          {/* Summary KPI Grid (2-col, compact height, number in thin bordered circle next to title) */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5">
-              <p className="text-xs text-stone-500 dark:text-stone-400">أحداث اليوم</p>
-              <p className="mt-1.5 text-2xl sm:text-3xl font-bold tabular-nums text-[#8C3B2B] dark:text-[#E28A6D]">
+            <div className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] px-3.5 py-2.5 sm:px-4 sm:py-3">
+              <span className="text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-300">
+                أحداث اليوم
+              </span>
+              <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-[#8C3B2B]/5 dark:bg-[#E28A6D]/10 text-xs sm:text-sm font-bold tabular-nums text-[#8C3B2B] dark:text-[#E28A6D]">
                 {summary.todayOccurrences.length}
-              </p>
-              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-                في جدول اليوم
-              </p>
+              </span>
             </div>
 
-            <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5">
-              <p className="text-xs text-stone-500 dark:text-stone-400">خلال هذا الأسبوع</p>
-              <p className="mt-1.5 text-2xl sm:text-3xl font-bold tabular-nums text-stone-900 dark:text-stone-100">
+            <div className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] px-3.5 py-2.5 sm:px-4 sm:py-3">
+              <span className="text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-300">
+                خلال هذا الأسبوع
+              </span>
+              <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full border border-stone-300 dark:border-stone-700 bg-stone-100/80 dark:bg-stone-800/80 text-xs sm:text-sm font-bold tabular-nums text-stone-800 dark:text-stone-200">
                 {summary.thisWeekCount}
-              </p>
-              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-                الأيام السبعة القادمة
-              </p>
+              </span>
             </div>
           </div>
 
@@ -207,8 +210,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="space-y-6">
               <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="inline-flex items-center gap-2 text-base font-bold text-stone-900 dark:text-stone-100">
-                    <History className="w-4 h-4 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+                  <h2 className="inline-flex items-center gap-2 px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
+                    <History className="w-3.5 h-3.5 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
                     <span>ذاكرة اليوم</span>
                   </h2>
                   <span className="text-xs text-stone-500 dark:text-stone-400 tabular-nums">
@@ -261,17 +264,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Today's Agenda */}
               {summary.todayOccurrences.length > 0 && (
                 <div className="rounded-2xl border border-[#8C3B2B]/25 dark:border-[#E28A6D]/25 bg-[#FAF4ED] dark:bg-[#221D1B] p-5 space-y-3 shadow-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                  <div className="flex items-center">
+                    <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
                       مواعيد وأحداث اليوم
                     </h2>
-                    <button
-                      type="button"
-                      onClick={() => onNavigate('timeline')}
-                      className="text-xs font-medium text-[#8C3B2B] dark:text-[#E28A6D] hover:underline cursor-pointer"
-                    >
-                      عرض في الخط الزمني
-                    </button>
                   </div>
                   <div className="divide-y divide-stone-100 dark:divide-stone-800">
                     {summary.todayOccurrences.map((occ) => (
@@ -281,9 +277,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         onClick={() => onSelectEvent(occ.event)}
                         className="w-full py-2.5 first:pt-0 last:pb-0 text-right flex flex-col items-stretch group cursor-pointer"
                       >
-                        <p className="text-sm font-bold text-stone-900 dark:text-stone-100 group-hover:text-[#8C3B2B] dark:group-hover:text-[#E28A6D]">
+                        <p className="text-sm font-bold text-stone-900 dark:text-stone-100 group-hover:text-[#8C3B2B] dark:group-hover:text-[#E28A6D] break-words">
                           {occ.event.title}
                         </p>
+                        {occ.event.description && (
+                          <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                            {occ.event.description}
+                          </p>
+                        )}
                         <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
                           {occ.event.time ? `الساعة ${occ.event.time} · ` : ''}
                           {occ.hijriFormatted}
@@ -299,7 +300,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="space-y-6">
               <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
                 <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                  <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
                     أقرب المواعيد القادمة
                   </h2>
                   <button
@@ -351,6 +352,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <p className="mt-1 text-sm font-bold text-stone-900 dark:text-stone-100 group-hover:text-[#8C3B2B] dark:group-hover:text-[#E28A6D] break-words">
                             {occ.event.title}
                           </p>
+                          {occ.event.description && (
+                            <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                              {occ.event.description}
+                            </p>
+                          )}
                         </button>
                       );
                     })}

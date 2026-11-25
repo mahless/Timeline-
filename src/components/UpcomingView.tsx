@@ -88,6 +88,11 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
             <h3 className="mt-1.5 text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 group-hover:text-[#8C3B2B] dark:group-hover:text-[#E28A6D] break-words">
               {occ.event.title}
             </h3>
+            {occ.event.description && (
+              <p className="mt-1 text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed line-clamp-2 break-words">
+                {occ.event.description}
+              </p>
+            )}
           </button>
 
           <button
@@ -199,9 +204,11 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
       {/* Due Reminders */}
       {dueReminders.length > 0 && (
         <div className="rounded-2xl border border-[#8C3B2B]/30 dark:border-[#E28A6D]/30 bg-white dark:bg-[#1E1D1B] p-4 space-y-2.5">
-          <h2 className="text-sm font-bold text-[#8C3B2B] dark:text-[#E28A6D]">
-            تنبيهات مستحقة الآن
-          </h2>
+          <div>
+            <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-[#8C3B2B] dark:text-[#E28A6D] shadow-2xs">
+              تنبيهات مستحقة الآن
+            </h2>
+          </div>
           <div className="divide-y divide-stone-100 dark:divide-stone-800">
             {dueReminders.map((rem) => (
               <div key={rem.key} className="py-2 flex flex-wrap items-center justify-between gap-2">
@@ -213,7 +220,12 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
                   <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 truncate">
                     {rem.event.title}
                   </p>
-                  <p className="text-xs text-stone-500 dark:text-stone-400 tabular-nums">
+                  {rem.event.description && (
+                    <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                      {rem.event.description}
+                    </p>
+                  )}
+                  <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400 tabular-nums">
                     {rem.labelAr} · {rem.occurrenceDateKey}
                   </p>
                 </button>
@@ -244,9 +256,11 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
         <div className="space-y-6">
           {pinnedList.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-xs font-semibold text-[#8C3B2B] dark:text-[#E28A6D]">
-                الأحداث المثبتة ({pinnedList.length})
-              </h2>
+              <div>
+                <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs font-bold text-[#8C3B2B] dark:text-[#E28A6D] shadow-2xs">
+                  الأحداث المثبتة ({pinnedList.length})
+                </h2>
+              </div>
               <div className="space-y-3">{pinnedList.map(renderOccurrenceCard)}</div>
             </div>
           )}
@@ -254,9 +268,11 @@ export const UpcomingView: React.FC<UpcomingViewProps> = ({
           {regularList.length > 0 && (
             <div className="space-y-3">
               {pinnedList.length > 0 && (
-                <h2 className="text-xs font-semibold text-stone-500 dark:text-stone-400">
-                  بقية المواعيد القادمة ({regularList.length})
-                </h2>
+                <div>
+                  <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-stone-200 dark:border-stone-700 bg-white/80 dark:bg-[#1E1D1B] text-xs font-bold text-stone-700 dark:text-stone-300 shadow-2xs">
+                    بقية المواعيد القادمة ({regularList.length})
+                  </h2>
+                </div>
               )}
               <div className="space-y-3">{regularList.map(renderOccurrenceCard)}</div>
             </div>

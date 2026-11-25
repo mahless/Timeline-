@@ -166,82 +166,100 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
             {event.title}
           </h2>
 
-          {/* Dates, Location, Thread, Recurrence Summary */}
-          <dl className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#141413] p-4 text-sm">
-            <div className="flex items-start gap-2.5 min-w-0">
-              <Calendar className="w-4 h-4 mt-0.5 text-stone-500 shrink-0" aria-hidden="true" />
-              <div className="min-w-0">
-                <dt className="text-xs text-stone-500 dark:text-stone-400">التاريخ الميلادي</dt>
-                <dd className="mt-0.5 font-medium tabular-nums text-stone-900 dark:text-stone-100 break-words">
-                  {gregorianText}
-                </dd>
+          {/* Description (Directly below Title) */}
+          {event.description ? (
+            <p className="mt-2.5 whitespace-pre-line text-sm sm:text-base leading-relaxed text-stone-700 dark:text-stone-300 break-words">
+              {event.description}
+            </p>
+          ) : (
+            <p className="mt-2 text-xs sm:text-sm text-stone-400 dark:text-stone-500 italic">
+              لا توجد تفاصيل إضافية مسجلة لهذا الحدث.
+            </p>
+          )}
+
+          {/* Dates Card: Gregorian and Hijri on the same row */}
+          <div className="mt-4 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#141413] p-3 sm:p-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 divide-x divide-x-reverse divide-stone-200/80 dark:divide-stone-800">
+              <div className="flex items-start gap-2 sm:gap-2.5 min-w-0 pr-1">
+                <Calendar className="w-4 h-4 mt-0.5 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+                <div className="min-w-0">
+                  <span className="block text-xs text-stone-500 dark:text-stone-400">التاريخ الميلادي</span>
+                  <p className="mt-0.5 text-xs sm:text-sm font-semibold tabular-nums text-stone-900 dark:text-stone-100 break-words">
+                    {gregorianText}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 sm:gap-2.5 min-w-0 pr-2 sm:pr-4">
+                <Calendar className="w-4 h-4 mt-0.5 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+                <div className="min-w-0">
+                  <span className="block text-xs text-stone-500 dark:text-stone-400">التاريخ الهجري</span>
+                  <p className="mt-0.5 text-xs sm:text-sm font-semibold tabular-nums text-stone-900 dark:text-stone-100 break-words">
+                    {event.hijriFormatted}
+                  </p>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-start gap-2.5 min-w-0">
-              <Calendar className="w-4 h-4 mt-0.5 text-stone-500 shrink-0" aria-hidden="true" />
-              <div className="min-w-0">
-                <dt className="text-xs text-stone-500 dark:text-stone-400">التاريخ الهجري</dt>
-                <dd className="mt-0.5 font-medium tabular-nums text-stone-900 dark:text-stone-100 break-words">
-                  {event.hijriFormatted}
-                </dd>
-              </div>
-            </div>
-
-            {event.time && (
-              <div className="flex items-start gap-2.5 min-w-0">
-                <Clock className="w-4 h-4 mt-0.5 text-stone-500 shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <dt className="text-xs text-stone-500 dark:text-stone-400">الوقت</dt>
-                  <dd className="mt-0.5 font-medium tabular-nums text-stone-900 dark:text-stone-100">
-                    {event.time}
-                  </dd>
+          {/* Secondary Info: Time, Location, Thread, Recurrence */}
+          {(event.time || event.location || thread || event.recurrence) && (
+            <dl className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#141413] p-3.5 text-xs sm:text-sm">
+              {event.time && (
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <Clock className="w-4 h-4 mt-0.5 text-stone-500 shrink-0" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <dt className="text-xs text-stone-500 dark:text-stone-400">الوقت</dt>
+                    <dd className="mt-0.5 font-medium tabular-nums text-stone-900 dark:text-stone-100">
+                      {event.time}
+                    </dd>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {event.location && (
-              <div className="flex items-start gap-2.5 min-w-0">
-                <MapPin className="w-4 h-4 mt-0.5 text-stone-500 shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <dt className="text-xs text-stone-500 dark:text-stone-400">الموقع</dt>
-                  <dd className="mt-0.5 font-medium text-stone-900 dark:text-stone-100 break-words">
-                    {event.location}
-                  </dd>
+              {event.location && (
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <MapPin className="w-4 h-4 mt-0.5 text-stone-500 shrink-0" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <dt className="text-xs text-stone-500 dark:text-stone-400">الموقع</dt>
+                    <dd className="mt-0.5 font-medium text-stone-900 dark:text-stone-100 break-words">
+                      {event.location}
+                    </dd>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {thread && (
-              <div className="flex items-start gap-2.5 min-w-0">
-                <GitBranch className="w-4 h-4 mt-0.5 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <dt className="text-xs text-stone-500 dark:text-stone-400">السلسلة الموضوعية</dt>
-                  <dd className="mt-0.5 font-medium text-stone-900 dark:text-stone-100 break-words">
-                    {thread.title}
-                  </dd>
+              {thread && (
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <GitBranch className="w-4 h-4 mt-0.5 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <dt className="text-xs text-stone-500 dark:text-stone-400">السلسلة الموضوعية</dt>
+                    <dd className="mt-0.5 font-medium text-stone-900 dark:text-stone-100 break-words">
+                      {thread.title}
+                    </dd>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {event.recurrence && (
-              <div className="flex items-start gap-2.5 min-w-0">
-                <Repeat className="w-4 h-4 mt-0.5 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
-                <div className="min-w-0">
-                  <dt className="text-xs text-stone-500 dark:text-stone-400">التكرار الدوري</dt>
-                  <dd className="mt-0.5 font-medium text-stone-900 dark:text-stone-100 break-words">
-                    {RECURRENCE_LABELS[event.recurrence.frequency]} (
-                    {event.recurrence.calendar === 'hijri' ? 'هجري' : 'ميلادي'})
-                    {event.recurrence.endDate ? ` · حتى ${event.recurrence.endDate}` : ''}
-                  </dd>
+              {event.recurrence && (
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <Repeat className="w-4 h-4 mt-0.5 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <dt className="text-xs text-stone-500 dark:text-stone-400">التكرار الدوري</dt>
+                    <dd className="mt-0.5 font-medium text-stone-900 dark:text-stone-100 break-words">
+                      {RECURRENCE_LABELS[event.recurrence.frequency]} (
+                      {event.recurrence.calendar === 'hijri' ? 'هجري' : 'ميلادي'})
+                      {event.recurrence.endDate ? ` · حتى ${event.recurrence.endDate}` : ''}
+                    </dd>
+                  </div>
                 </div>
-              </div>
-            )}
-          </dl>
+              )}
+            </dl>
+          )}
 
           {/* Reminders */}
           {event.reminders && event.reminders.length > 0 && (
-            <div className="mt-5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#141413] p-4">
+            <div className="mt-3.5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-[#141413] p-4">
               <h3 className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 dark:text-stone-400">
                 <Bell className="w-3.5 h-3.5 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
                 <span>التذكيرات المفعّلة</span>
@@ -252,22 +270,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   .join(' · ')}
               </p>
             </div>
-          )}
-
-          {/* Description */}
-          {event.description ? (
-            <div className="mt-6">
-              <h3 className="text-xs font-medium text-stone-500 dark:text-stone-400">
-                التفاصيل والوصف
-              </h3>
-              <p className="mt-2 whitespace-pre-line text-base leading-relaxed text-stone-800 dark:text-stone-200 break-words">
-                {event.description}
-              </p>
-            </div>
-          ) : (
-            <p className="mt-6 text-sm text-stone-500 dark:text-stone-400">
-              لا توجد تفاصيل إضافية مسجلة لهذا الحدث.
-            </p>
           )}
 
           {/* Keywords */}

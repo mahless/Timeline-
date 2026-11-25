@@ -168,9 +168,14 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
             }}
             className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5 space-y-4"
           >
-            <label htmlFor="ai-question-input" className="block text-sm font-bold text-stone-900 dark:text-stone-100">
-              اسأل أرشيفك الشخصي
-            </label>
+            <div>
+              <label
+                htmlFor="ai-question-input"
+                className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs"
+              >
+                اسأل أرشيفك الشخصي
+              </label>
+            </div>
             <div className="flex items-center gap-2 min-w-0">
               <input
                 id="ai-question-input"
@@ -225,7 +230,7 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
           {aiResult && (
             <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
               <div>
-                <h2 className="text-xs font-semibold text-[#8C3B2B] dark:text-[#E28A6D]">
+                <h2 className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-[#8C3B2B] dark:text-[#E28A6D] shadow-2xs">
                   الإجابة من سجلاتك المسجلة
                 </h2>
                 <p className="mt-2 whitespace-pre-line text-sm sm:text-base leading-relaxed text-stone-900 dark:text-stone-100 break-words">
@@ -261,6 +266,11 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
                           <p className="mt-1 text-sm font-bold text-stone-900 dark:text-stone-100 break-words">
                             {ev.title}
                           </p>
+                          {ev.description && (
+                            <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-400 line-clamp-2 break-words">
+                              {ev.description}
+                            </p>
+                          )}
                         </button>
                       );
                     })}
@@ -288,9 +298,14 @@ export const AssistantView: React.FC<AssistantViewProps> = ({
       ) : (
         <div className="space-y-4">
           <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-4 sm:p-5 space-y-2.5">
-            <label htmlFor="semantic-search-input" className="block text-sm font-bold text-stone-900 dark:text-stone-100">
-              البحث الدلالي المفاهيمي (يعمل 100% محليًا ودون إنترنت)
-            </label>
+            <div>
+              <label
+                htmlFor="semantic-search-input"
+                className="inline-flex items-center px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs"
+              >
+                البحث الدلالي المفاهيمي (يعمل 100% محليًا ودون إنترنت)
+              </label>
+            </div>
             <div className="relative">
               <Search className="w-4 h-4 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
               <input
