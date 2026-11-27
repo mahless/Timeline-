@@ -160,3 +160,44 @@ export async function syncAutoBackupOnChange(
   await setMetaValue(META_BACKUP_STATUS_KEY, next);
   return next;
 }
+
+export async function syncLinkedBackupNow(
+  buildPayload: () => Promise<TimelineBackupPayload>,
+): Promise<BackupSyncStatus> {
+  const prev = await getBackupSyncStatus();
+  if (!prev.linkedFileName) {
+    throw new Error('لا يوجد ملف مربوط حاليًا.');
+  }
+
+  const handle = await getMetaValue<FileHandleLike | null>(META_FILE_HANDLE_KEY);
+  if (!handle || typeof handle.createWritable !== 'function') {
+    throw new Error('تعذر الوصول إلى الملف المربوط، يرجى إلغاء الربط ثم إعادة ربطه.');
+  }
+
+  let perm: 'granted' | 'denied' | 'prompt' = handle.queryPermission
+    ? await handle.queryPermission({ mode: 'readwrite' })
+    : 'granted';
+
+  if (perm !== 'granted' && handle.requestPermission) {
+    perm = await handle.requestPermission({ mode: 'readwrite' });
+  }
+
+  if (perm !== 'granted') {
+    throw new Error('لم تُمنح صلاحية الكتابة على الملف المربوط. يرجى الموافقة أو إعادة ربط الملف.');
+  }
+
+  const payload = await buildPayload();
+  const writable = await handle.createWritable();
+  await writable.write(JSON.stringify(payload, null, 2));
+  await writable.close();
+
+  const nowIso = new Date().toISOString();
+  const next: BackupSyncStatus = {
+    ...prev,
+    lastExportedAt: nowIso,
+    lastFileSyncedAt: nowIso,
+    unsavedChangesCount: 0,
+  };
+  await setMetaValue(META_BACKUP_STATUS_KEY, next);
+  return next;
+}

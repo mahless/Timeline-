@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   CheckCircle2,
-  Download,
   FileSpreadsheet,
   FolderKanban,
   HardDrive,
@@ -9,6 +8,7 @@ import {
   Lock,
   Moon,
   Printer,
+  RefreshCw,
   Shield,
   Sun,
   Type as TypeIcon,
@@ -24,7 +24,6 @@ import {
 } from '../domain/backup';
 import {
   decryptBackupPayload,
-  encryptBackupPayload,
   hashPin,
   isEncryptedBackupEnvelope,
   type EncryptedBackupEnvelope,
@@ -35,7 +34,7 @@ import type { Category, DateParts, EventThread, TimelineEvent } from '../domain/
 import {
   isAutoFileBackupSupported,
   linkBackupFileOnDevice,
-  markManualBackupExported,
+  syncLinkedBackupNow,
   unlinkBackupFileOnDevice,
   type BackupSyncStatus,
 } from '../pwa/autoFileBackup';
@@ -113,10 +112,6 @@ export const VaultView: React.FC<VaultViewProps> = ({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Encrypted backup passphrase
-  const [showEncryptBox, setShowEncryptBox] = useState(false);
-  const [encryptPass, setEncryptPass] = useState('');
-
   // Pending encrypted import awaiting passphrase
   const [pendingEncryptedEnvelope, setPendingEncryptedEnvelope] =
     useState<EncryptedBackupEnvelope | null>(null);
@@ -142,52 +137,6 @@ export const VaultView: React.FC<VaultViewProps> = ({
     setErrorMessage(null);
   };
 
-  const handleExportJson = async () => {
-    clearFeedback();
-    setBusyMessage('جارٍ تجهيز النسخة الاحتياطية الكاملة...');
-    try {
-      const payload = await exportFullBackup();
-      const blob = new Blob([JSON.stringify(payload, null, 2)], {
-        type: 'application/json;charset=utf-8',
-      });
-      const dateTag = `${today.year}-${String(today.month).padStart(2, '0')}-${String(today.day).padStart(2, '0')}`;
-      triggerDownload(blob, `timeline-backup-${dateTag}.json`);
-      const nextSync = await markManualBackupExported();
-      onBackupSyncStatusChange(nextSync);
-      setStatusMessage(
-        `تم تصدير النسخة الاحتياطية (${payload.events.length} حدثًا و ${payload.attachments.length} مرفقًا).`,
-      );
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'تعذر تصدير النسخة الاحتياطية.');
-    } finally {
-      setBusyMessage(null);
-    }
-  };
-
-  const handleExportEncrypted = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearFeedback();
-    setBusyMessage('جارٍ تشفير الأرشيف بـ AES-256-GCM...');
-    try {
-      const payload = await exportFullBackup();
-      const envelope = await encryptBackupPayload(JSON.stringify(payload), encryptPass);
-      const blob = new Blob([JSON.stringify(envelope, null, 2)], {
-        type: 'application/json;charset=utf-8',
-      });
-      const dateTag = `${today.year}-${String(today.month).padStart(2, '0')}-${String(today.day).padStart(2, '0')}`;
-      triggerDownload(blob, `timeline-encrypted-${dateTag}.tlvault.json`);
-      const nextSync = await markManualBackupExported();
-      onBackupSyncStatusChange(nextSync);
-      setEncryptPass('');
-      setShowEncryptBox(false);
-      setStatusMessage('تم تصدير النسخة الاحتياطية المشفرة بنجاح.');
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'تعذر تشفير النسخة الاحتياطية.');
-    } finally {
-      setBusyMessage(null);
-    }
-  };
-
   const handleLinkAutoBackupFile = async () => {
     clearFeedback();
     setBusyMessage('جارٍ تجهيز وربط ملف النسخ التلقائي على الجهاز...');
@@ -203,6 +152,24 @@ export const VaultView: React.FC<VaultViewProps> = ({
         return;
       }
       setErrorMessage(err instanceof Error ? err.message : 'تعذر ربط ملف النسخ التلقائي.');
+    } finally {
+      setBusyMessage(null);
+    }
+  };
+
+  const handleSyncLinkedBackupNow = async () => {
+    clearFeedback();
+    setBusyMessage('جارٍ مزامنة التغييرات الحالية مع الملف المربوط...');
+    try {
+      const nextSync = await syncLinkedBackupNow(exportFullBackup);
+      onBackupSyncStatusChange(nextSync);
+      setStatusMessage(
+        `تمت مزامنة التغييرات مع الملف (${nextSync.linkedFileName}) بنجاح.`,
+      );
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : 'تعذر مزامنة التغييرات مع الملف المربوط.',
+      );
     } finally {
       setBusyMessage(null);
     }
@@ -364,7 +331,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
           الأمان والنسخ الاحتياطي والتصدير
         </h1>
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-          تحكم كامل في حماية أرشيفك بقفل رقمي، النسخ الاحتياطي المشفر، التصدير، ومراقبة مساحة التخزين المحلية.
+          تحكم كامل في حماية أرشيفك بقفل رقمي، النسخ الاحتياطي التلقائي، التصدير، ومراقبة مساحة التخزين المحلية.
         </p>
       </div>
 
@@ -391,69 +358,131 @@ export const VaultView: React.FC<VaultViewProps> = ({
         <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-[#1E1D1B] p-5 space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="inline-flex items-center gap-2 px-3 py-1 rounded-xl border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white/80 dark:bg-[#1E1D1B] text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 shadow-2xs">
-              <Download className="w-4 h-4 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
-              <span>النسخ الاحتياطي والاستعادة (مع المرفقات)</span>
+              <RefreshCw className="w-4 h-4 text-[#8C3B2B] dark:text-[#E28A6D] shrink-0" aria-hidden="true" />
+              <span>النسخ التلقائي والاستعادة (مع المرفقات)</span>
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
-            يحفظ ملف النسخ الاحتياطي جميع الأحداث، التصنيفات، السلاسل، والصور والمرفقات مع منع تلقائي للتكرار عند الاستيراد.
+            يُحفظ أرشيفك تلقائيًا مع المرفقات في ذاكرة الجهاز الدائمة، ويمكنك ربط ملف محلي للمزامنة التلقائية أو الفورية والاستعادة منه مع منع التكرار.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={handleExportJson}
-              className="min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#8C3B2B] hover:bg-[#732F21] px-4 py-2 text-xs sm:text-sm font-medium text-white cursor-pointer"
-            >
-              <Download className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span>نسخة احتياطية JSON</span>
-            </button>
+          {/* Auto-Backup Status, Manual Sync, Unlink & Restore Panel */}
+          <div className="rounded-xl border border-stone-200 dark:border-stone-700/80 bg-[#FAF8F4] dark:bg-[#141413] p-4 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-900 dark:text-stone-100">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+                <span>النسخ التلقائي وحالة الحفظ</span>
+              </span>
+              {backupSyncStatus.unsavedChangesCount > 0 ? (
+                <span className="text-[11px] font-medium text-[#8C3B2B] dark:text-[#E28A6D] tabular-nums">
+                  {backupSyncStatus.unsavedChangesCount} تعديلات غير مزامنة خارجيًا
+                </span>
+              ) : (
+                <span className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                  محدّث بالكامل
+                </span>
+              )}
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setShowEncryptBox((v) => !v)}
-              className="min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] px-4 py-2 text-xs sm:text-sm font-medium text-stone-800 dark:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer"
-            >
-              <Lock className="w-4 h-4 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
-              <span>نسخة مشفرة</span>
-            </button>
-          </div>
+            <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+              تُحفظ كل التعديلات تلقائيًا وفوريًا في ذاكرة الجهاز الدائمة (IndexedDB)
+              {backupSyncStatus.lastAutoSnapshotAt
+                ? ` · آخر حفظ داخلي: ${new Date(backupSyncStatus.lastAutoSnapshotAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`
+                : '.'}
+            </p>
 
-          {showEncryptBox && (
-            <form onSubmit={handleExportEncrypted} className="rounded-xl border border-stone-200 dark:border-stone-700 bg-[#FAF8F4] dark:bg-[#141413] p-3.5 space-y-3">
-              <label htmlFor="enc-pass-input" className="block text-xs font-medium text-stone-700 dark:text-stone-300">
-                كلمة مرور تشفير النسخة (AES-256-GCM)
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  id="enc-pass-input"
-                  type="password"
-                  value={encryptPass}
-                  onChange={(e) => setEncryptPass(e.target.value)}
-                  placeholder="4 أحرف على الأقل..."
-                  className="flex-1 min-w-0 min-h-[40px] rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#1E1D1B] px-3 text-sm"
-                />
-                <button
-                  type="submit"
-                  className="min-h-[40px] rounded-lg bg-[#8C3B2B] px-3.5 text-xs font-medium text-white cursor-pointer shrink-0"
-                >
-                  تشفير وتنزيل
-                </button>
+            {isAutoFileBackupSupported() ? (
+              backupSyncStatus.linkedFileName ? (
+                <div className="space-y-2.5 pt-2 border-t border-stone-200/80 dark:border-stone-800">
+                  <div className="min-w-0 text-xs text-stone-800 dark:text-stone-200 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span className="font-semibold">مربوط مع: </span>
+                      <span dir="ltr" className="font-mono text-[11px] break-all">
+                        {backupSyncStatus.linkedFileName}
+                      </span>
+                    </div>
+                    {backupSyncStatus.lastFileSyncedAt && (
+                      <span className="text-[11px] text-stone-500 dark:text-stone-400 tabular-nums">
+                        آخر مزامنة:{' '}
+                        {new Date(backupSyncStatus.lastFileSyncedAt).toLocaleTimeString('ar-EG', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSyncLinkedBackupNow}
+                      className="min-h-[38px] inline-flex items-center gap-1.5 rounded-lg bg-[#8C3B2B] hover:bg-[#732F21] px-3.5 py-1.5 text-xs font-medium text-white cursor-pointer shrink-0"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                      <span>نسخ الآن</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleUnlinkAutoBackupFile}
+                      className="min-h-[38px] inline-flex items-center gap-1.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#1E1D1B] px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer shrink-0"
+                    >
+                      <Unlink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                      <span>إلغاء الربط</span>
+                    </button>
+
+                    <label className="min-h-[38px] inline-flex items-center gap-1.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#1E1D1B] px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer shrink-0">
+                      <Upload className="w-3.5 h-3.5 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
+                      <span>استعادة من ملف</span>
+                      <input
+                        type="file"
+                        accept=".json,.tlvault.json,application/json"
+                        onChange={handleFileImport}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-stone-200/80 dark:border-stone-800">
+                  <button
+                    type="button"
+                    onClick={handleLinkAutoBackupFile}
+                    className="flex-1 min-w-[200px] min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg bg-[#8C3B2B] hover:bg-[#732F21] px-3.5 py-2 text-xs font-medium text-white cursor-pointer"
+                  >
+                    <Link2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span>ربط ملف نسخ تلقائي على الجهاز</span>
+                  </button>
+
+                  <label className="min-h-[40px] inline-flex items-center justify-center gap-1.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#1E1D1B] px-3.5 py-2 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer shrink-0">
+                    <Upload className="w-3.5 h-3.5 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
+                    <span>استعادة من ملف</span>
+                    <input
+                      type="file"
+                      accept=".json,.tlvault.json,application/json"
+                      onChange={handleFileImport}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
+              )
+            ) : (
+              <div className="space-y-2.5 pt-2 border-t border-stone-200/80 dark:border-stone-800">
+                <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
+                  متصفحك الحالي لا يدعم الكتابة المباشرة على ملفات الجهاز؛ يُحفظ أرشيفك تلقائيًا داخل التطبيق ويمكنك الاستعادة من أي ملف محفوظ أدناه.
+                </p>
+                <label className="w-full min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#1E1D1B] px-3.5 py-2 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer">
+                  <Upload className="w-4 h-4 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
+                  <span>استعادة من ملف</span>
+                  <input
+                    type="file"
+                    accept=".json,.tlvault.json,application/json"
+                    onChange={handleFileImport}
+                    className="sr-only"
+                  />
+                </label>
               </div>
-            </form>
-          )}
-
-          <div className="pt-2 border-t border-stone-100 dark:border-stone-800">
-            <label className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 dark:border-stone-700 px-4 py-2.5 text-xs sm:text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800/60 cursor-pointer">
-              <Upload className="w-4 h-4 shrink-0 text-[#8C3B2B] dark:text-[#E28A6D]" aria-hidden="true" />
-              <span>استيراد واستعادة نسخة (.json أو .tlvault.json)</span>
-              <input
-                type="file"
-                accept=".json,.tlvault.json,application/json"
-                onChange={handleFileImport}
-                className="sr-only"
-              />
-            </label>
+            )}
           </div>
 
           {pendingEncryptedEnvelope && (
@@ -478,65 +507,6 @@ export const VaultView: React.FC<VaultViewProps> = ({
               </div>
             </form>
           )}
-          {/* Auto-Backup Status & Linking Panel */}
-          <div className="rounded-xl border border-stone-200 dark:border-stone-700/80 bg-[#FAF8F4] dark:bg-[#141413] p-3.5 space-y-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-900 dark:text-stone-100">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-                <span>النسخ التلقائي وحالة الحفظ</span>
-              </span>
-              {backupSyncStatus.unsavedChangesCount > 0 ? (
-                <span className="text-[11px] font-medium text-[#8C3B2B] dark:text-[#E28A6D] tabular-nums">
-                  {backupSyncStatus.unsavedChangesCount} تعديلات غير مصدّرة خارجيًا
-                </span>
-              ) : (
-                <span className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                  محدّث بالكامل
-                </span>
-              )}
-            </div>
-
-            <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-              تُحفظ كل التعديلات تلقائيًا وفوريًا في ذاكرة الجهاز الدائمة (IndexedDB)
-              {backupSyncStatus.lastAutoSnapshotAt
-                ? ` · آخر حفظ داخلي: ${new Date(backupSyncStatus.lastAutoSnapshotAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}`
-                : '.'}
-            </p>
-
-            {isAutoFileBackupSupported() ? (
-              backupSyncStatus.linkedFileName ? (
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-stone-200/80 dark:border-stone-800">
-                  <div className="min-w-0 text-xs text-stone-800 dark:text-stone-200">
-                    <span className="font-semibold">مربوط مع: </span>
-                    <span dir="ltr" className="font-mono text-[11px] break-all">
-                      {backupSyncStatus.linkedFileName}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleUnlinkAutoBackupFile}
-                    className="min-h-[36px] inline-flex items-center gap-1 rounded-lg border border-stone-300 dark:border-stone-700 px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 cursor-pointer shrink-0"
-                  >
-                    <Unlink className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>إلغاء الربط</span>
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleLinkAutoBackupFile}
-                  className="w-full min-h-[40px] inline-flex items-center justify-center gap-2 rounded-lg border border-[#8C3B2B]/40 dark:border-[#E28A6D]/40 bg-white dark:bg-[#1E1D1B] px-3 py-2 text-xs font-medium text-[#8C3B2B] dark:text-[#E28A6D] hover:bg-[#8C3B2B]/5 dark:hover:bg-[#E28A6D]/10 cursor-pointer"
-                >
-                  <Link2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>ربط ملف نسخ تلقائي على الجهاز (تحديث صامت بعد كل تعديل)</span>
-                </button>
-              )
-            ) : (
-              <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed pt-1 border-t border-stone-200/80 dark:border-stone-800">
-                لحماية خصوصيتك، تمنع متصفحات الهواتف الكتابة الصامتة على مجلد التنزيلات تلقائيًا؛ يُحفظ أرشيفك تلقائيًا داخل التطبيق ويمكنك تنزيل نسخة خارجية بضغطة واحدة أعلاه.
-              </p>
-            )}
-          </div>
         </div>
 
         {/* Reports Export Card (Excel / PDF) */}
